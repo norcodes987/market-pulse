@@ -16,7 +16,7 @@ export function WatchlistBar({ tickers, onRemove }: Props) {
     );
   }
   return (
-    <div className="flex flex-wrap gap-2 py-2">
+    <div className="flex gap-2 py-2 overflow-x-auto sm:flex-wrap [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {tickers.map((t) => (
         <TickerPill key={t} ticker={t} onRemove={onRemove} />
       ))}
