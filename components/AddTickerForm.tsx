@@ -26,10 +26,12 @@ export function AddTickerForm({ onAdd }: Props) {
         placeholder="Add ticker…"
         maxLength={10}
         className="bg-[#1a1a1a] border border-[#1f1f1f] rounded px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#C8FF00] w-36"
+        suppressHydrationWarning
       />
       <button
         type="submit"
         className="bg-[#C8FF00] text-black text-sm font-semibold px-3 py-1.5 rounded hover:brightness-90 transition-all"
+        suppressHydrationWarning
       >
         Add
       </button>

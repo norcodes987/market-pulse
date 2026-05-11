@@ -15,13 +15,13 @@ export function parseQuote(raw: YahooChartResponse): QuoteResponse {
   return {
     ticker: meta.symbol,
     name: meta.longName ?? meta.shortName ?? meta.symbol,
-    price: meta.regularMarketPrice,
-    change: meta.regularMarketChange,
-    changePct: meta.regularMarketChangePercent,
+    price: meta.regularMarketPrice ?? 0,
+    change: meta.regularMarketChange ?? 0,
+    changePct: meta.regularMarketChangePercent ?? 0,
     currency: meta.currency,
-    high: meta.regularMarketDayHigh,
-    low: meta.regularMarketDayLow,
-    volume: meta.regularMarketVolume,
+    high: meta.regularMarketDayHigh ?? 0,
+    low: meta.regularMarketDayLow ?? 0,
+    volume: meta.regularMarketVolume ?? 0,
     sparkline: closes.filter((v): v is number => v !== null),
   };
 }

@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Market Pulse
 
-## Getting Started
+A dark-themed stock watchlist dashboard. Add ticker symbols, get live price cards with sparklines, and pull up recent news headlines — no account required.
 
-First, run the development server:
+![Stack](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue) ![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8)
+
+## Features
+
+- **Watchlist** — add/remove tickers, persisted to `localStorage`
+- **Price cards** — current price, day change, high/low, volume
+- **Sparklines** — 5-day closing price trend (Recharts)
+- **News drawer** — 5 recent headlines per ticker, fetched on demand
+- **Auto-refresh** — quotes refresh every 60 seconds
+- **Isolated errors** — one bad ticker doesn't crash the grid
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Running tests
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+Tests cover `lib/yahoo.ts` (parse helpers) and `hooks/useWatchlist.ts`.
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+app/
+  api/quote/route.ts   — proxies Yahoo Finance chart endpoint
+  api/news/route.ts    — proxies Yahoo Finance search endpoint
+  page.tsx             — main page
+components/            — UI components (StockCard, TopBar, NewsDrawer, …)
+hooks/                 — useWatchlist, useQuotes, useNews
+lib/yahoo.ts           — server-only parse helpers
+types/index.ts         — shared TypeScript interfaces
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Data
 
-## Deploy on Vercel
+Prices and news come from Yahoo Finance's unofficial public endpoints, called server-side to avoid CORS. No API key needed. Data reflects the last market session when markets are closed — change/changePct will show 0 outside trading hours.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Tech
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| | |
+|---|---|
+| Framework | Next.js 16, App Router |
+| Language | TypeScript (strict) |
+| Styling | Tailwind CSS v4 |
+| Charts | Recharts |
+| Testing | Jest + React Testing Library |
+| Persistence | localStorage |
