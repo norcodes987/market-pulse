@@ -14,7 +14,7 @@ export default function Home() {
     <div className='min-h-screen bg-[#080808]'>
       <TopBar onAdd={addTicker} />
 
-      <main className='px-6 py-6 max-w-7xl mx-auto'>
+      <main className='px-4 sm:px-6 py-6 max-w-7xl mx-auto'>
         <WatchlistBar tickers={tickers} onRemove={removeTicker} />
 
         {tickers.length > 0 && (
