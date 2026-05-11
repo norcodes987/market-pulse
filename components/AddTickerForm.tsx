@@ -25,7 +25,7 @@ export function AddTickerForm({ onAdd }: Props) {
         onChange={(e) => setValue(e.target.value)}
         placeholder="Add ticker…"
         maxLength={10}
-        className="bg-[#1a1a1a] border border-[#1f1f1f] rounded px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#C8FF00] w-36"
+        className="flex-1 sm:flex-none sm:w-36 bg-[#1a1a1a] border border-[#1f1f1f] rounded px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#C8FF00]"
         suppressHydrationWarning
       />
       <button
