@@ -12,12 +12,16 @@ export function parseQuote(raw: YahooChartResponse): QuoteResponse {
   }
   const { meta, indicators } = result;
   const closes = indicators.quote[0]?.close ?? [];
+  const price = meta.regularMarketPrice ?? 0;
+  const prevClose = meta.chartPreviousClose ?? 0;
+  const change = prevClose > 0 ? price - prevClose : 0;
+  const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
   return {
     ticker: meta.symbol,
     name: meta.longName ?? meta.shortName ?? meta.symbol,
-    price: meta.regularMarketPrice ?? 0,
-    change: meta.regularMarketChange ?? 0,
-    changePct: meta.regularMarketChangePercent ?? 0,
+    price,
+    change,
+    changePct,
     currency: meta.currency,
     high: meta.regularMarketDayHigh ?? 0,
     low: meta.regularMarketDayLow ?? 0,

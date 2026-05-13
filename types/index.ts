@@ -32,8 +32,7 @@ export interface YahooChartMeta {
   longName?: string;
   shortName?: string;
   regularMarketPrice?: number;
-  regularMarketChange?: number;
-  regularMarketChangePercent?: number;
+  chartPreviousClose?: number;
   currency: string;
   regularMarketDayHigh?: number;
   regularMarketDayLow?: number;

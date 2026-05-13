@@ -1,6 +1,6 @@
 'use client';
 
-import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, YAxis, ResponsiveContainer } from 'recharts';
 
 interface Props {
   data: number[];
@@ -14,6 +14,7 @@ export function Sparkline({ data, positive }: Props) {
   return (
     <ResponsiveContainer width="100%" height={48}>
       <AreaChart data={chartData} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+        <YAxis domain={['auto', 'auto']} hide />
         <Area
           type="monotone"
           dataKey="v"
