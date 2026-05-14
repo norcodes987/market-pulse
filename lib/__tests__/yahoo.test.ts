@@ -9,8 +9,7 @@ const mockChartResponse: YahooChartResponse = {
           symbol: 'AAPL',
           longName: 'Apple Inc.',
           regularMarketPrice: 189.87,
-          regularMarketChange: 1.23,
-          regularMarketChangePercent: 0.653,
+          chartPreviousClose: 188.64,
           currency: 'USD',
           regularMarketDayHigh: 190.5,
           regularMarketDayLow: 188.0,
@@ -42,7 +41,7 @@ describe('parseQuote', () => {
     expect(result.ticker).toBe('AAPL');
     expect(result.name).toBe('Apple Inc.');
     expect(result.price).toBe(189.87);
-    expect(result.change).toBe(1.23);
+    expect(result.change).toBeCloseTo(1.23);
     expect(result.changePct).toBeCloseTo(0.653);
     expect(result.currency).toBe('USD');
     expect(result.high).toBe(190.5);

@@ -3,6 +3,7 @@
 import { useWatchlist } from '@/hooks/useWatchlist';
 import { useQuotes } from '@/hooks/useQuotes';
 import { TopBar } from '@/components/TopBar';
+import { MarketBar } from '@/components/MarketBar';
 import { WatchlistBar } from '@/components/WatchlistBar';
 import { StockCard } from '@/components/StockCard';
 
@@ -13,6 +14,7 @@ export default function Home() {
   return (
     <div className='min-h-screen bg-[#080808]'>
       <TopBar onAdd={addTicker} />
+      <MarketBar />
 
       <main className='px-4 sm:px-6 py-6 max-w-7xl mx-auto'>
         <WatchlistBar tickers={tickers} onRemove={removeTicker} />
@@ -21,7 +23,6 @@ export default function Home() {
           <div className='mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
             {tickers.map((ticker) => {
               const state = quotes[ticker] ?? { status: 'loading' };
-              console.log(state);
               return <StockCard key={ticker} ticker={ticker} state={state} />;
             })}
           </div>
