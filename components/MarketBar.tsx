@@ -61,7 +61,7 @@ export function MarketBar() {
             />
           ))}
         </div>
-        <div className="pb-2 px-1">
+        <div className="py-2.5 px-1">
           <p className="text-xs text-gray-500">
             <span className="text-gray-400 font-semibold">{selected}:</span>{' '}
             {DESCRIPTIONS[selected]}

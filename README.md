@@ -6,6 +6,7 @@ A dark-themed stock watchlist dashboard. Add ticker symbols, get live price card
 
 ## Features
 
+- **Market overview bar** — pinned strip showing SPY, QQQ, IWM, and VIX with live change %; select any to read a plain-English description
 - **Watchlist** — add/remove tickers, persisted to `localStorage`
 - **Price cards** — current price, day change, high/low, volume
 - **Sparklines** — 5-day closing price trend (Recharts)
@@ -28,7 +29,7 @@ Open [http://localhost:3000](http://localhost:3000).
 npm test
 ```
 
-Tests cover `lib/yahoo.ts` (parse helpers) and `hooks/useWatchlist.ts`.
+Tests cover `lib/yahoo.ts` (parse helpers), `hooks/useWatchlist.ts`, and `hooks/useMarketOverview.ts`.
 
 ## Project structure
 
@@ -37,8 +38,8 @@ app/
   api/quote/route.ts   — proxies Yahoo Finance chart endpoint
   api/news/route.ts    — proxies Yahoo Finance search endpoint
   page.tsx             — main page
-components/            — UI components (StockCard, TopBar, NewsDrawer, …)
-hooks/                 — useWatchlist, useQuotes, useNews
+components/            — UI components (MarketBar, StockCard, TopBar, NewsDrawer, …)
+hooks/                 — useMarketOverview, useWatchlist, useQuotes, useNews
 lib/yahoo.ts           — server-only parse helpers
 types/index.ts         — shared TypeScript interfaces
 ```
