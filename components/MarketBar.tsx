@@ -7,10 +7,10 @@ import type { QuoteState } from '@/types';
 const MARKET_TICKERS = ['SPY', 'QQQ', 'IWM', 'VIX'] as const;
 
 const DESCRIPTIONS: Record<string, string> = {
-  SPY: "S&P 500 ETF — tracks the 500 largest US companies. The broadest read on the US stock market.",
-  QQQ: "Nasdaq-100 ETF — heavily weighted toward tech. Moves more aggressively than SPY; a tech sentiment signal.",
-  IWM: "Russell 2000 ETF — 2,000 small-caps. Lags SPY when credit is tight or recession fear is rising.",
-  VIX: "CBOE Volatility Index — the market's fear gauge. Below 15: calm. 15–25: normal. Above 25: elevated stress.",
+  SPY: 'S&P 500 ETF — tracks the 500 largest US companies',
+  QQQ: 'Nasdaq-100 ETF — heavily weighted toward tech.',
+  IWM: 'Russell 2000 ETF — 2,000 small-caps.',
+  VIX: 'CBOE Volatility Index. Below 15: calm. 15–25: normal. Above 25: elevated stress.',
 };
 
 interface TickerItemProps {
@@ -29,7 +29,8 @@ function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
     const sign = state.data.changePct >= 0 ? '+' : '';
     price = state.data.price.toFixed(2);
     changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
-    colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
+    colorClass =
+      state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
   }
 
   return (
@@ -39,8 +40,10 @@ function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
         selected ? 'border-[#C8FF00]' : 'border-transparent'
       }`}
     >
-      <span className="text-xs text-gray-500 font-semibold tracking-wide">{ticker}</span>
-      <span className="text-xs font-semibold text-white">{price}</span>
+      <span className='text-xs text-gray-500 font-semibold tracking-wide'>
+        {ticker}
+      </span>
+      <span className='text-xs font-semibold text-white'>{price}</span>
       <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
     </button>
   );
@@ -51,9 +54,9 @@ export function MarketBar() {
   const [selected, setSelected] = useState<string>('SPY');
 
   return (
-    <div className="border-b border-[#1f1f1f]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex overflow-x-auto">
+    <div className='border-b border-[#1f1f1f]'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6'>
+        <div className='flex overflow-x-auto'>
           {MARKET_TICKERS.map((ticker) => (
             <TickerItem
               key={ticker}
@@ -64,9 +67,9 @@ export function MarketBar() {
             />
           ))}
         </div>
-        <div className="py-2.5 px-1">
-          <p className="text-xs text-gray-500">
-            <span className="text-gray-400 font-semibold">{selected}:</span>{' '}
+        <div className='py-2.5 px-1'>
+          <p className='text-xs text-gray-500'>
+            <span className='text-gray-400 font-semibold'>{selected}:</span>{' '}
             {DESCRIPTIONS[selected]}
           </p>
         </div>
