@@ -5,6 +5,11 @@ import type { QuoteState } from '@/types';
 
 const MARKET_TICKERS = ['SPY', 'QQQ', 'IWM', 'VIX'] as const;
 
+// Yahoo Finance uses ^-prefixed symbols for indices, not plain ticker names
+const YAHOO_SYMBOLS: Record<string, string> = {
+  VIX: '^VIX',
+};
+
 const initialState: Record<string, QuoteState> = Object.fromEntries(
   MARKET_TICKERS.map((t) => [t, { status: 'loading' } as QuoteState])
 );
@@ -14,9 +19,10 @@ export function useMarketOverview(): Record<string, QuoteState> {
 
   async function fetchAll() {
     const results = await Promise.allSettled(
-      MARKET_TICKERS.map((ticker) =>
-        fetch(`/api/quote?ticker=${ticker}`).then((r) => r.json())
-      )
+      MARKET_TICKERS.map((ticker) => {
+        const symbol = encodeURIComponent(YAHOO_SYMBOLS[ticker] ?? ticker);
+        return fetch(`/api/quote?ticker=${symbol}`).then((r) => r.json());
+      })
     );
 
     setQuotes(() => {
@@ -45,8 +51,6 @@ export function useMarketOverview(): Record<string, QuoteState> {
     fetchAll();
     const interval = setInterval(fetchAll, 60_000);
     return () => clearInterval(interval);
-    // fetchAll is defined inside the effect's closure; no dep needed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return quotes;

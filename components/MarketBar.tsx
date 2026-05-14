@@ -21,12 +21,14 @@ interface TickerItemProps {
 }
 
 function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
-  let value = '--';
+  let price = '--';
+  let changePct = '--';
   let colorClass = 'text-gray-500';
 
   if (state.status === 'ok') {
     const sign = state.data.changePct >= 0 ? '+' : '';
-    value = `${sign}${state.data.changePct.toFixed(2)}%`;
+    price = state.data.price.toFixed(2);
+    changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
     colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
   }
 
@@ -38,7 +40,8 @@ function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
       }`}
     >
       <span className="text-xs text-gray-500 font-semibold tracking-wide">{ticker}</span>
-      <span className={`text-xs font-semibold ${colorClass}`}>{value}</span>
+      <span className="text-xs font-semibold text-white">{price}</span>
+      <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
     </button>
   );
 }
