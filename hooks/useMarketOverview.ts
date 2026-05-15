@@ -5,13 +5,19 @@ import type { QuoteState } from '@/types';
 
 const MARKET_TICKERS = ['SPY', 'QQQ', 'IWM', 'VIX'] as const;
 
+export const SECTOR_TICKERS = [
+  'XLK', 'XLF', 'XLE', 'XLV', 'XLU', 'XLI', 'XLB', 'XLRE', 'XLY', 'XLP', 'XLC',
+] as const;
+
+const ALL_TICKERS = [...MARKET_TICKERS, ...SECTOR_TICKERS] as const;
+
 // Yahoo Finance uses ^-prefixed symbols for indices, not plain ticker names
 const YAHOO_SYMBOLS: Record<string, string> = {
   VIX: '^VIX',
 };
 
 const initialState: Record<string, QuoteState> = Object.fromEntries(
-  MARKET_TICKERS.map((t) => [t, { status: 'loading' } as QuoteState])
+  ALL_TICKERS.map((t) => [t, { status: 'loading' } as QuoteState])
 );
 
 export function useMarketOverview(): Record<string, QuoteState> {
@@ -19,7 +25,7 @@ export function useMarketOverview(): Record<string, QuoteState> {
 
   async function fetchAll() {
     const results = await Promise.allSettled(
-      MARKET_TICKERS.map((ticker) => {
+      ALL_TICKERS.map((ticker) => {
         const symbol = encodeURIComponent(YAHOO_SYMBOLS[ticker] ?? ticker);
         return fetch(`/api/quote?ticker=${symbol}`).then((r) => r.json());
       })
@@ -27,7 +33,7 @@ export function useMarketOverview(): Record<string, QuoteState> {
 
     setQuotes(() => {
       const next: Record<string, QuoteState> = {};
-      MARKET_TICKERS.forEach((ticker, i) => {
+      ALL_TICKERS.forEach((ticker, i) => {
         const result = results[i];
         if (result.status === 'fulfilled') {
           const data = result.value;

@@ -22,13 +22,15 @@ afterEach(() => {
 });
 
 describe('useMarketOverview', () => {
-  it('starts all four tickers in loading state', () => {
+  it('starts index and sector tickers in loading state', () => {
     jest.spyOn(global, 'fetch').mockImplementation(() => new Promise(() => {}));
     const { result } = renderHook(() => useMarketOverview());
     expect(result.current['SPY']).toEqual({ status: 'loading' });
     expect(result.current['QQQ']).toEqual({ status: 'loading' });
     expect(result.current['IWM']).toEqual({ status: 'loading' });
     expect(result.current['VIX']).toEqual({ status: 'loading' });
+    expect(result.current['XLK']).toEqual({ status: 'loading' });
+    expect(result.current['XLE']).toEqual({ status: 'loading' });
   });
 
   it('sets all tickers to ok on successful fetch', async () => {
