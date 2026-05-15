@@ -22,6 +22,11 @@ export interface NewsResponse {
   articles: NewsArticle[];
 }
 
+export interface WatchlistEntry {
+  ticker: string;
+  tag: 'owned' | 'watching';
+}
+
 export type QuoteState =
   | { status: 'loading' }
   | { status: 'ok'; data: QuoteResponse }
