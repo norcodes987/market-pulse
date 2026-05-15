@@ -115,7 +115,7 @@ Pure derived computation in `page.tsx` render — no new state, no fetch, no eff
 
 ### Quote fetching
 
-`useQuotes` always receives tickers from *all* entries regardless of active tab. Quotes for hidden tabs stay loaded in the background, so switching tabs shows data immediately with no loading skeletons.
+`useQuotes` always receives `entries.map(e => e.ticker)` — the full ticker list from all entries, regardless of active tab. Quotes for hidden tabs stay loaded in the background, so switching tabs shows data immediately with no loading skeletons. The local variable holding this derived list should be named `allTickers` in `page.tsx` to avoid confusion with the old `tickers` name.
 
 ---
 
