@@ -1,39 +1,61 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { WatchlistEntry } from '@/types';
 
 const STORAGE_KEY = 'stockbuzz:watchlist';
 
+function loadEntries(): WatchlistEntry[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    // Migrate legacy string[] format
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+      const migrated: WatchlistEntry[] = (parsed as string[]).map((ticker) => ({
+        ticker,
+        tag: 'watching',
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+    return parsed as WatchlistEntry[];
+  } catch {
+    return [];
+  }
+}
+
+function persist(entries: WatchlistEntry[]): WatchlistEntry[] {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  return entries;
+}
+
 export function useWatchlist() {
-  const [tickers, setTickers] = useState<string[]>([]);
+  const [entries, setEntries] = useState<WatchlistEntry[]>([]);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setTickers(JSON.parse(stored));
-    } catch {
-      // ignore parse errors
-    }
+    setEntries(loadEntries());
   }, []);
 
   function addTicker(raw: string) {
     const ticker = raw.trim().toUpperCase();
     if (!ticker) return;
-    setTickers((prev) => {
-      if (prev.includes(ticker)) return prev;
-      const next = [...prev, ticker];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
+    setEntries((prev) => {
+      if (prev.some((e) => e.ticker === ticker)) return prev;
+      return persist([...prev, { ticker, tag: 'watching' }]);
     });
   }
 
   function removeTicker(ticker: string) {
-    setTickers((prev) => {
-      const next = prev.filter((t) => t !== ticker);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      return next;
+    setEntries((prev) => persist(prev.filter((e) => e.ticker !== ticker)));
+  }
+
+  function setTag(ticker: string, tag: 'owned' | 'watching') {
+    setEntries((prev) => {
+      if (!prev.some((e) => e.ticker === ticker)) return prev;
+      return persist(prev.map((e) => (e.ticker === ticker ? { ...e, tag } : e)));
     });
   }
 
-  return { tickers, addTicker, removeTicker };
+  return { entries, addTicker, removeTicker, setTag };
 }
