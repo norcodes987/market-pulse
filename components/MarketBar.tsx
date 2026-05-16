@@ -11,6 +11,17 @@ const DESCRIPTIONS: Record<string, string> = {
   QQQ: 'Nasdaq-100 ETF — heavily weighted toward tech.',
   IWM: 'Russell 2000 ETF — 2,000 small-caps.',
   VIX: 'CBOE Volatility Index. Below 15: calm. 15–25: normal. Above 25: elevated stress.',
+  XLK: 'Technology ETF — software, hardware, semiconductors.',
+  XLF: 'Financials ETF — banks, insurance, asset managers.',
+  XLE: 'Energy ETF — oil, gas, and energy equipment.',
+  XLV: 'Health Care ETF — pharma, biotech, medical devices.',
+  XLU: 'Utilities ETF — electric, gas, and water utilities.',
+  XLI: 'Industrials ETF — aerospace, defense, machinery.',
+  XLB: 'Materials ETF — chemicals, metals, mining.',
+  XLRE: 'Real Estate ETF — REITs and real estate services.',
+  XLY: 'Consumer Discretionary ETF — retail, autos, leisure.',
+  XLP: 'Consumer Staples ETF — food, beverages, household products.',
+  XLC: 'Communication Services ETF — media, telecom, internet.',
 };
 
 interface IndexItemProps {
@@ -29,7 +40,8 @@ function IndexItem({ ticker, state, selected, onClick }: IndexItemProps) {
     const sign = state.data.changePct >= 0 ? '+' : '';
     price = state.data.price.toFixed(2);
     changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
-    colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
+    colorClass =
+      state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
   }
 
   return (
@@ -39,7 +51,9 @@ function IndexItem({ ticker, state, selected, onClick }: IndexItemProps) {
         selected ? 'border-[#C8FF00]' : 'border-transparent'
       }`}
     >
-      <span className='text-xs text-gray-500 font-semibold tracking-wide'>{ticker}</span>
+      <span className='text-xs text-gray-500 font-semibold tracking-wide'>
+        {ticker}
+      </span>
       <span className='text-xs font-semibold text-white'>{price}</span>
       <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
     </button>
@@ -49,23 +63,33 @@ function IndexItem({ ticker, state, selected, onClick }: IndexItemProps) {
 interface SectorPillProps {
   ticker: string;
   state: QuoteState;
+  selected: boolean;
+  onClick: () => void;
 }
 
-function SectorPill({ ticker, state }: SectorPillProps) {
+function SectorPill({ ticker, state, selected, onClick }: SectorPillProps) {
   let changePct = '--';
   let colorClass = 'text-gray-500';
 
   if (state.status === 'ok') {
     const sign = state.data.changePct >= 0 ? '+' : '';
     changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
-    colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
+    colorClass =
+      state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
   }
 
   return (
-    <div className='flex flex-col items-start shrink-0 px-3 py-2.5'>
-      <span className='text-xs text-gray-500 font-semibold tracking-wide'>{ticker}</span>
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-start shrink-0 px-3 py-2.5 border-b-2 transition-colors hover:bg-white/5 ${
+        selected ? 'border-[#C8FF00]' : 'border-transparent'
+      }`}
+    >
+      <span className='text-xs text-gray-500 font-semibold tracking-wide'>
+        {ticker}
+      </span>
       <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
-    </div>
+    </button>
   );
 }
 
@@ -94,6 +118,8 @@ export function MarketBar() {
               key={ticker}
               ticker={ticker}
               state={quotes[ticker] ?? { status: 'loading' }}
+              selected={selected === ticker}
+              onClick={() => setSelected(ticker)}
             />
           ))}
         </div>
