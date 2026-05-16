@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useMarketOverview } from '@/hooks/useMarketOverview';
+import { useMarketOverview, SECTOR_TICKERS } from '@/hooks/useMarketOverview';
 import type { QuoteState } from '@/types';
 
 const MARKET_TICKERS = ['SPY', 'QQQ', 'IWM', 'VIX'] as const;
@@ -13,14 +13,14 @@ const DESCRIPTIONS: Record<string, string> = {
   VIX: 'CBOE Volatility Index. Below 15: calm. 15–25: normal. Above 25: elevated stress.',
 };
 
-interface TickerItemProps {
+interface IndexItemProps {
   ticker: string;
   state: QuoteState;
   selected: boolean;
   onClick: () => void;
 }
 
-function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
+function IndexItem({ ticker, state, selected, onClick }: IndexItemProps) {
   let price = '--';
   let changePct = '--';
   let colorClass = 'text-gray-500';
@@ -29,8 +29,7 @@ function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
     const sign = state.data.changePct >= 0 ? '+' : '';
     price = state.data.price.toFixed(2);
     changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
-    colorClass =
-      state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
+    colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
   }
 
   return (
@@ -40,12 +39,33 @@ function TickerItem({ ticker, state, selected, onClick }: TickerItemProps) {
         selected ? 'border-[#C8FF00]' : 'border-transparent'
       }`}
     >
-      <span className='text-xs text-gray-500 font-semibold tracking-wide'>
-        {ticker}
-      </span>
+      <span className='text-xs text-gray-500 font-semibold tracking-wide'>{ticker}</span>
       <span className='text-xs font-semibold text-white'>{price}</span>
       <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
     </button>
+  );
+}
+
+interface SectorPillProps {
+  ticker: string;
+  state: QuoteState;
+}
+
+function SectorPill({ ticker, state }: SectorPillProps) {
+  let changePct = '--';
+  let colorClass = 'text-gray-500';
+
+  if (state.status === 'ok') {
+    const sign = state.data.changePct >= 0 ? '+' : '';
+    changePct = `${sign}${state.data.changePct.toFixed(2)}%`;
+    colorClass = state.data.changePct >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]';
+  }
+
+  return (
+    <div className='flex flex-col items-start shrink-0 px-3 py-2.5'>
+      <span className='text-xs text-gray-500 font-semibold tracking-wide'>{ticker}</span>
+      <span className={`text-xs font-semibold ${colorClass}`}>{changePct}</span>
+    </div>
   );
 }
 
@@ -58,12 +78,22 @@ export function MarketBar() {
       <div className='max-w-7xl mx-auto px-4 sm:px-6'>
         <div className='flex overflow-x-auto'>
           {MARKET_TICKERS.map((ticker) => (
-            <TickerItem
+            <IndexItem
               key={ticker}
               ticker={ticker}
               state={quotes[ticker] ?? { status: 'loading' }}
               selected={selected === ticker}
               onClick={() => setSelected(ticker)}
+            />
+          ))}
+          <div className='flex items-center px-2 text-[#2f2f2f] text-lg select-none shrink-0'>
+            │
+          </div>
+          {SECTOR_TICKERS.map((ticker) => (
+            <SectorPill
+              key={ticker}
+              ticker={ticker}
+              state={quotes[ticker] ?? { status: 'loading' }}
             />
           ))}
         </div>
