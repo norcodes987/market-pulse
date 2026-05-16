@@ -1,5 +1,5 @@
-import { parseQuote, parseNews } from '../yahoo';
-import type { YahooChartResponse, YahooSearchResponse } from '../../types';
+import { parseQuote, parseNews, parseFundamentals } from '../yahoo';
+import type { YahooChartResponse, YahooSearchResponse, YahooSummaryResponse } from '../../types';
 
 const mockChartResponse: YahooChartResponse = {
   chart: {
@@ -96,5 +96,113 @@ describe('parseNews', () => {
 
   it('returns empty array when news is missing', () => {
     expect(parseNews({ news: [] })).toEqual([]);
+  });
+});
+
+const mockSummaryResponse: YahooSummaryResponse = {
+  quoteSummary: {
+    result: [
+      {
+        financialData: {
+          targetLowPrice: { raw: 150.0 },
+          targetMeanPrice: { raw: 220.0 },
+          targetHighPrice: { raw: 300.0 },
+          numberOfAnalystOpinions: { raw: 42 },
+          recommendationKey: 'buy',
+        },
+        defaultKeyStatistics: {
+          forwardPE: { raw: 28.5 },
+          beta: { raw: 1.25 },
+          shortPercentOfFloat: { raw: 0.032 },
+        },
+        earningsHistory: {
+          history: [
+            {
+              quarter: { fmt: '3/31/2024' },
+              epsActual: { raw: 1.52 },
+              epsEstimate: { raw: 1.48 },
+              surprisePercent: { raw: 0.027 },
+            },
+            {
+              quarter: { fmt: '12/31/2023' },
+              epsActual: { raw: 2.18 },
+              epsEstimate: { raw: 2.1 },
+              surprisePercent: { raw: 0.038 },
+            },
+          ],
+        },
+      },
+    ],
+    error: null,
+  },
+};
+
+describe('parseFundamentals', () => {
+  it('maps all fields from a full response', () => {
+    const result = parseFundamentals(mockSummaryResponse);
+    expect(result.targetLow).toBe(150.0);
+    expect(result.targetMean).toBe(220.0);
+    expect(result.targetHigh).toBe(300.0);
+    expect(result.analystCount).toBe(42);
+    expect(result.recommendation).toBe('buy');
+    expect(result.forwardPE).toBe(28.5);
+    expect(result.beta).toBe(1.25);
+    expect(result.shortFloat).toBe(0.032);
+    expect(result.earnings).toHaveLength(2);
+  });
+
+  it('maps earnings fields including surprisePct as a fraction', () => {
+    const result = parseFundamentals(mockSummaryResponse);
+    expect(result.earnings[0]).toEqual({
+      quarter: '3/31/2024',
+      epsActual: 1.52,
+      epsEstimate: 1.48,
+      surprisePct: 0.027,
+    });
+  });
+
+  it('returns null for missing optional stat fields', () => {
+    const noStats: YahooSummaryResponse = {
+      quoteSummary: {
+        result: [
+          {
+            financialData: mockSummaryResponse.quoteSummary.result![0].financialData,
+          },
+        ],
+        error: null,
+      },
+    };
+    const result = parseFundamentals(noStats);
+    expect(result.forwardPE).toBeNull();
+    expect(result.beta).toBeNull();
+    expect(result.shortFloat).toBeNull();
+  });
+
+  it('returns empty earnings array when earningsHistory is absent', () => {
+    const noHistory: YahooSummaryResponse = {
+      quoteSummary: {
+        result: [
+          {
+            financialData: mockSummaryResponse.quoteSummary.result![0].financialData,
+            defaultKeyStatistics:
+              mockSummaryResponse.quoteSummary.result![0].defaultKeyStatistics,
+          },
+        ],
+        error: null,
+      },
+    };
+    const result = parseFundamentals(noHistory);
+    expect(result.earnings).toEqual([]);
+  });
+
+  it('throws when quoteSummary result is null', () => {
+    expect(() =>
+      parseFundamentals({
+        quoteSummary: {
+          result: null,
+          error: { code: '404', description: 'Not found' },
+        },
+      })
+    ).toThrow('Not found');
   });
 });
