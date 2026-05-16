@@ -9,6 +9,9 @@ import { NewsDrawer } from './NewsDrawer';
 interface Props {
   ticker: string;
   state: QuoteState;
+  tag: 'owned' | 'watching';
+  onTagToggle: () => void;
+  onRemove: () => void;
 }
 
 function fmt(n: number, decimals = 2) {
@@ -21,7 +24,7 @@ function fmtVolume(v: number) {
   return v.toString();
 }
 
-export function StockCard({ ticker, state }: Props) {
+export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) {
   const [newsOpen, setNewsOpen] = useState(false);
 
   if (state.status === 'loading') return <SkeletonCard />;
@@ -29,7 +32,16 @@ export function StockCard({ ticker, state }: Props) {
   if (state.status === 'error') {
     return (
       <div className="bg-[#111111] border border-[#1f1f1f] rounded-xl p-4">
-        <p className="text-sm font-semibold text-white mb-1">{ticker}</p>
+        <div className="flex justify-between items-start mb-1">
+          <p className="text-sm font-semibold text-white">{ticker}</p>
+          <button
+            onClick={onRemove}
+            className="text-gray-600 hover:text-gray-400 text-xs leading-none ml-2"
+            aria-label={`Remove ${ticker}`}
+          >
+            ✕
+          </button>
+        </div>
         <p className="text-xs text-[#ef4444]">{state.message}</p>
       </div>
     );
@@ -48,7 +60,25 @@ export function StockCard({ ticker, state }: Props) {
             <p className="font-heading text-base font-bold text-white tracking-wide">{ticker}</p>
             <p className="text-xs text-gray-500 truncate max-w-[140px]">{data.name}</p>
           </div>
-          <span className="text-xs text-gray-500">{data.currency}</span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={onTagToggle}
+              className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${
+                tag === 'owned'
+                  ? 'bg-[#1f3a0f] text-[#C8FF00] hover:bg-[#2a4f14]'
+                  : 'bg-[#1a1a2e] text-gray-500 hover:bg-[#222240]'
+              }`}
+            >
+              {tag === 'owned' ? 'OWNED' : 'WATCH'}
+            </button>
+            <button
+              onClick={onRemove}
+              className="text-gray-600 hover:text-gray-400 text-xs leading-none"
+              aria-label={`Remove ${ticker}`}
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <p className="font-heading text-3xl font-bold text-white mb-0.5">
