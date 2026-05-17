@@ -1,11 +1,16 @@
 'use client';
 
 import { AreaChart, Area, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import type { TooltipProps } from 'recharts';
 
 interface Props {
   data: number[];
   positive: boolean;
+}
+
+interface SparkTooltipProps {
+  active?: boolean;
+  payload?: Array<{ value: number; payload: { total: number } }>;
+  label?: number;
 }
 
 function relativeLabel(index: number, total: number): string {
@@ -15,16 +20,16 @@ function relativeLabel(index: number, total: number): string {
   return `${daysAgo}d ago`;
 }
 
-function SparkTooltip({ active, payload, label }: TooltipProps<number, string> & { label?: number }) {
+function SparkTooltip({ active, payload, label }: SparkTooltipProps) {
   if (!active || !payload?.length) return null;
   const price = payload[0].value;
-  const total = payload[0].payload.total as number;
+  const total = payload[0].payload.total;
   const dayLabel = relativeLabel(label ?? 0, total);
   return (
     <div className="bg-[#1f1f1f] border border-[#2a2a2a] rounded px-2 py-1 text-[11px] leading-tight pointer-events-none">
       <span className="text-gray-500">{dayLabel}</span>
       <span className="text-white font-semibold ml-1.5">
-        ${(price as number).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        ${price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </span>
     </div>
   );
