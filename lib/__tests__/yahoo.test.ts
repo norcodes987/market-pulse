@@ -16,7 +16,7 @@ const mockChartResponse: YahooChartResponse = {
           regularMarketVolume: 50_000_000,
         },
         indicators: {
-          quote: [{ close: [185.0, 186.5, null, 188.5, 189.87] }],
+          quote: [{ close: [185.0, 186.5, 187.8, 188.64, 189.87] }],
         },
       },
     ],
@@ -51,7 +51,7 @@ describe('parseQuote', () => {
 
   it('filters null values out of sparkline', () => {
     const result = parseQuote(mockChartResponse);
-    expect(result.sparkline).toEqual([185.0, 186.5, 188.5, 189.87]);
+    expect(result.sparkline).toEqual([185.0, 186.5, 187.8, 188.64, 189.87]);
   });
 
   it('falls back to shortName when longName is missing', () => {

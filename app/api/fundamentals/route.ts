@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   }
 
   const symbol = encodeURIComponent(ticker.toUpperCase());
-  const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=financialData%2CdefaultKeyStatistics%2CearningsHistory`;
+  const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=financialData%2CdefaultKeyStatistics%2CearningsHistory`;
 
   try {
     const raw = await fetchYahooWithCrumb<YahooSummaryResponse>(url);

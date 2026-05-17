@@ -16,7 +16,12 @@ export function parseQuote(raw: YahooChartResponse): QuoteResponse {
   const { meta, indicators } = result;
   const closes = indicators.quote[0]?.close ?? [];
   const price = meta.regularMarketPrice ?? 0;
-  const prevClose = meta.chartPreviousClose ?? 0;
+  // Yahoo's chart API omits regularMarketChange/regularMarketPreviousClose.
+  // With interval=1d&range=5d: closes[-1]=today, closes[-2]=yesterday's close.
+  const prevClose =
+    closes.length >= 2
+      ? (closes[closes.length - 2] ?? meta.chartPreviousClose ?? 0)
+      : (meta.chartPreviousClose ?? 0);
   const change = prevClose > 0 ? price - prevClose : 0;
   const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
   return {
@@ -62,14 +67,15 @@ export async function fetchYahoo<T>(url: string): Promise<T> {
 let crumbCache: { crumb: string; cookie: string; expiresAt: number } | null = null;
 
 async function refreshCrumb(): Promise<{ crumb: string; cookie: string }> {
-  const homeRes = await fetch('https://finance.yahoo.com', {
+  // fc.yahoo.com reliably sets the A3 cookie that Yahoo's crumb endpoint requires.
+  const fcRes = await fetch('https://fc.yahoo.com', {
     headers: { 'User-Agent': 'Mozilla/5.0' },
     redirect: 'follow',
   });
-  const setCookies = homeRes.headers.getSetCookie();
+  const setCookies = fcRes.headers.getSetCookie();
   const cookie = setCookies.map((c) => c.split(';')[0].trim()).join('; ');
 
-  const crumbRes = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
+  const crumbRes = await fetch('https://query2.finance.yahoo.com/v1/test/getcrumb', {
     headers: { 'User-Agent': 'Mozilla/5.0', Cookie: cookie },
   });
   if (!crumbRes.ok) throw new Error('Unable to authenticate with Yahoo Finance');
