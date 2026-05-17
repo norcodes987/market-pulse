@@ -36,18 +36,18 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
 
   if (state.status === 'error') {
     return (
-      <div className='bg-[#111111] border border-[#1f1f1f] rounded-xl p-4'>
-        <div className='flex justify-between items-start mb-1'>
-          <p className='text-sm font-semibold text-white'>{ticker}</p>
+      <div className="bg-[#111111] border border-[#1f1f1f] rounded-xl p-4">
+        <div className="flex justify-between items-start mb-1">
+          <p className="text-sm font-semibold text-white">{ticker}</p>
           <button
             onClick={onRemove}
-            className='text-gray-600 hover:text-gray-400 text-xs leading-none ml-2'
+            className="text-gray-600 hover:text-gray-400 text-xs leading-none ml-2"
             aria-label={`Remove ${ticker}`}
           >
             ✕
           </button>
         </div>
-        <p className='text-xs text-[#ef4444]'>{state.message}</p>
+        <p className="text-xs text-[#ef4444]">{state.message}</p>
       </div>
     );
   }
@@ -58,14 +58,14 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
   const sign = positive ? '+' : '';
 
   return (
-    <div className='bg-[#111111] border border-[#1f1f1f] rounded-xl overflow-hidden'>
-      <div className='p-4'>
-        <div className='flex justify-between items-start mb-2'>
+    <div className="bg-[#111111] border border-[#1f1f1f] rounded-xl overflow-hidden">
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
           <div>
-            <p className='font-heading text-base font-bold text-white tracking-wide'>{ticker}</p>
-            <p className='text-xs text-gray-500 truncate max-w-[140px]'>{data.name}</p>
+            <p className="font-heading text-base font-bold text-white tracking-wide">{ticker}</p>
+            <p className="text-xs text-gray-500 truncate max-w-[140px]">{data.name}</p>
           </div>
-          <div className='flex items-center gap-1.5 shrink-0'>
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={onTagToggle}
               className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition-colors ${
@@ -78,7 +78,7 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
             </button>
             <button
               onClick={onRemove}
-              className='text-gray-600 hover:text-gray-400 text-xs leading-none'
+              className="text-gray-600 hover:text-gray-400 text-xs leading-none"
               aria-label={`Remove ${ticker}`}
             >
               ✕
@@ -86,7 +86,7 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
           </div>
         </div>
 
-        <p className='font-heading text-3xl font-bold text-white mb-0.5'>{fmt(data.price)}</p>
+        <p className="font-heading text-3xl font-bold text-white mb-0.5">{fmt(data.price)}</p>
 
         <p className={`text-sm font-semibold ${changeColor} mb-3`}>
           {sign}
@@ -95,12 +95,12 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
         </p>
 
         {data.sparkline.length > 1 && (
-          <div className='mb-3'>
+          <div className="mb-3">
             <Sparkline data={data.sparkline} positive={positive} />
           </div>
         )}
 
-        <div className='flex justify-between text-xs text-gray-500 mb-3'>
+        <div className="flex justify-between text-xs text-gray-500 mb-3">
           <span>
             H: {fmt(data.high)} / L: {fmt(data.low)}
           </span>
@@ -109,13 +109,13 @@ export function StockCard({ ticker, state, tag, onTagToggle, onRemove }: Props) 
 
         <button
           onClick={() => setNewsOpen((o) => !o)}
-          className='text-xs text-[#C8FF00] hover:underline w-full text-left'
+          className="text-xs text-[#C8FF00] hover:underline w-full text-left"
         >
           {newsOpen ? 'Hide news ↑' : 'Show news ↓'}
         </button>
         <button
           onClick={() => setFundOpen((o) => !o)}
-          className='text-xs text-[#C8FF00] hover:underline w-full text-left mt-1'
+          className="text-xs text-[#C8FF00] hover:underline w-full text-left mt-1"
         >
           {fundOpen ? 'Hide fundamentals ↑' : 'Show fundamentals ↓'}
         </button>
