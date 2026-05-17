@@ -6,11 +6,13 @@ A dark-themed stock watchlist dashboard. Add ticker symbols, get live price card
 
 ## Features
 
-- **Market overview bar** — pinned strip showing SPY, QQQ, IWM, and VIX with live change %; select any to read a plain-English description
-- **Watchlist** — add/remove tickers, persisted to `localStorage`
+- **Market overview bar** — pinned strip showing SPY, QQQ, IWM, VIX, and all 11 SPDR sector ETFs with live change %; click any to see a plain-English description
+- **Watchlist** — add/remove tickers, persisted to `localStorage`; tag each as Owned or Watching
 - **Price cards** — current price, day change, high/low, volume
-- **Sparklines** — 5-day closing price trend (Recharts)
+- **Sparklines** — 5-day closing price trend with hover tooltip showing relative day and price (e.g. `3d ago · $421.92`)
 - **News drawer** — 5 recent headlines per ticker, fetched on demand
+- **Fundamentals drawer** — analyst price targets, recommendation, Fwd P/E, Beta, Short %, and last 4 quarters of EPS history; fetched on demand
+- **Tab filtering** — filter the card grid by All / Owned / Watching
 - **Auto-refresh** — quotes refresh every 60 seconds
 - **Isolated errors** — one bad ticker doesn't crash the grid
 
@@ -76,7 +78,32 @@ Proxies: `https://query1.finance.yahoo.com/v1/finance/search?q={ticker}&newsCoun
 
 Proxies: `https://query2.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules=financialData,defaultKeyStatistics,earningsHistory`
 
-Requires a crumb token obtained from `fc.yahoo.com` + `query2`'s getcrumb endpoint (handled server-side, no API key needed).
+Requires a crumb token. The server handles this automatically, but if you want to test the endpoint manually (e.g. in Postman) you need three requests in sequence:
+
+**Why three requests?** Yahoo's crumb endpoint won't issue a token without a valid `A3` session cookie. `fc.yahoo.com` is the endpoint that hands one out without a login. Skip it and step 2 returns `{"error":{"code":"Unauthorized","description":"Invalid Cookie"}}`.
+
+**Step 1 — seed the cookie** (one-time per session):
+```
+GET https://fc.yahoo.com
+User-Agent: Mozilla/5.0
+```
+No useful response body. This stores the `A3` cookie in your client's cookie jar (Postman does this automatically when cookies are enabled).
+
+**Step 2 — get the crumb:**
+```
+GET https://query2.finance.yahoo.com/v1/test/getcrumb
+User-Agent: Mozilla/5.0
+```
+Returns a plain string, e.g. `fGUdnCa/hly`. The `A3` cookie from step 1 is sent automatically. Copy this value.
+
+**Step 3 — call quoteSummary:**
+```
+GET https://query2.finance.yahoo.com/v10/finance/quoteSummary/MSFT?modules=financialData%2CdefaultKeyStatistics%2CearningsHistory&crumb=PASTE_CRUMB_HERE
+User-Agent: Mozilla/5.0
+```
+If your crumb contains `/`, URL-encode it as `%2F` (Postman's Params tab does this automatically if you enter the raw value as a key/value pair).
+
+All three requests must use **`query2`** (not `query1`). Both the `A3` cookie and the crumb are tied to the same session.
 
 **Analyst targets** — from `financialData` module:
 
