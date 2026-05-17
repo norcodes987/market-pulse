@@ -100,7 +100,7 @@ export function MarketBar() {
   return (
     <div className='border-b border-[#1f1f1f]'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6'>
-        <div className='flex overflow-x-auto'>
+        <div className='flex overflow-x-auto scrollbar-hide'>
           {MARKET_TICKERS.map((ticker) => (
             <IndexItem
               key={ticker}

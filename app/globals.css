@@ -16,3 +16,10 @@ body {
   color: #f3f4f6;
   font-family: system-ui, sans-serif;
 }
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
