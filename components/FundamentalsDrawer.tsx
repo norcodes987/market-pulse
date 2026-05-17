@@ -41,11 +41,15 @@ function DataSection({ data, currentPrice }: { data: FundamentalsData; currentPr
           <div className='flex items-center flex-wrap gap-x-3 gap-y-1'>
             <span className='text-xs text-gray-500'>
               Low{' '}
-              <span className='text-white font-semibold'>${fmt2(data.targetLow!)}</span>
+              <span className='text-white font-semibold'>
+                {data.targetLow != null ? `$${fmt2(data.targetLow)}` : '--'}
+              </span>
               {' · '}Mean{' '}
               <span className='text-white font-semibold'>${fmt2(data.targetMean)}</span>
               {' · '}High{' '}
-              <span className='text-white font-semibold'>${fmt2(data.targetHigh!)}</span>
+              <span className='text-white font-semibold'>
+                {data.targetHigh != null ? `$${fmt2(data.targetHigh)}` : '--'}
+              </span>
             </span>
             {upside != null && (
               <span
