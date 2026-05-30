@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { AddTickerForm } from './AddTickerForm';
 
 interface Props {
@@ -12,7 +13,15 @@ export function TopBar({ onAdd }: Props) {
       <h1 className="font-heading text-2xl font-bold tracking-wide text-[#C8FF00]">
         Stock Buzz
       </h1>
-      <AddTickerForm onAdd={onAdd} />
+      <div className="flex items-center gap-3">
+        <Link
+          href="/find"
+          className="rounded border border-[#1f1f1f] px-3 py-1.5 text-xs text-[#888] transition-colors hover:border-[#C8FF00] hover:text-[#C8FF00]"
+        >
+          Find Stocks
+        </Link>
+        <AddTickerForm onAdd={onAdd} />
+      </div>
     </header>
   );
 }
