@@ -1,5 +1,6 @@
-import { parseQuote, parseNews, parseFundamentals } from '../yahoo';
+import { parseQuote, parseNews, parseFundamentals, parseMarketData } from '../yahoo';
 import type { YahooChartResponse, YahooSearchResponse, YahooSummaryResponse } from '../../types';
+import type { FindStocksYahooChart, FindStocksYahooSummary } from '../../types';
 
 const mockChartResponse: YahooChartResponse = {
   chart: {
@@ -204,5 +205,87 @@ describe('parseFundamentals', () => {
         },
       })
     ).toThrow('Not found');
+  });
+});
+
+const mockChart: FindStocksYahooChart = {
+  chart: {
+    result: [
+      {
+        meta: {
+          symbol: 'NVDA',
+          regularMarketPrice: 130,
+          currency: 'USD',
+        },
+        indicators: {
+          quote: [{ high: [100, 150, 140, null, 130] }],
+        },
+      },
+    ],
+    error: null,
+  },
+};
+
+const mockSummary: FindStocksYahooSummary = {
+  quoteSummary: {
+    result: [
+      {
+        defaultKeyStatistics: { forwardPE: { raw: 30 } },
+        summaryDetail: { trailingPE: { raw: 50 } },
+      },
+    ],
+    error: null,
+  },
+};
+
+describe('parseMarketData', () => {
+  it('extracts 52-week high as max of highs array, ignoring nulls', () => {
+    const result = parseMarketData('NVDA', mockChart, mockSummary);
+    expect(result.fiftyTwoWeekHigh).toBe(150);
+  });
+
+  it('computes pctBelowHigh correctly', () => {
+    const result = parseMarketData('NVDA', mockChart, mockSummary);
+    // (150 - 130) / 150 * 100 = 13.33
+    expect(result.pctBelowHigh).toBeCloseTo(13.33, 1);
+  });
+
+  it('extracts forward and trailing PE from summary', () => {
+    const result = parseMarketData('NVDA', mockChart, mockSummary);
+    expect(result.forwardPE).toBe(30);
+    expect(result.trailingPE).toBe(50);
+    expect(result.forwardBelowTrailing).toBe(true);
+  });
+
+  it('returns forwardBelowTrailing false when forward >= trailing', () => {
+    const summary: FindStocksYahooSummary = {
+      quoteSummary: {
+        result: [
+          {
+            defaultKeyStatistics: { forwardPE: { raw: 60 } },
+            summaryDetail: { trailingPE: { raw: 40 } },
+          },
+        ],
+        error: null,
+      },
+    };
+    const result = parseMarketData('NVDA', mockChart, summary);
+    expect(result.forwardBelowTrailing).toBe(false);
+  });
+
+  it('returns all null fields when chart result is null', () => {
+    const emptyChart: FindStocksYahooChart = {
+      chart: { result: null, error: { code: 'Not Found', description: 'Not found' } },
+    };
+    const emptySummary: FindStocksYahooSummary = {
+      quoteSummary: { result: null },
+    };
+    const result = parseMarketData('FAKE', emptyChart, emptySummary);
+    expect(result.fiftyTwoWeekHigh).toBeNull();
+    expect(result.currentPrice).toBeNull();
+    expect(result.pctBelowHigh).toBeNull();
+    expect(result.forwardPE).toBeNull();
+    expect(result.trailingPE).toBeNull();
+    expect(result.forwardBelowTrailing).toBeNull();
   });
 });

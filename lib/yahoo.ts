@@ -6,6 +6,9 @@ import type {
   FundamentalsData,
   EarningsQuarter,
   YahooSummaryResponse,
+  FindStocksYahooChart,
+  FindStocksYahooSummary,
+  TickerMarketData,
 } from '@/types';
 
 export function parseQuote(raw: YahooChartResponse): QuoteResponse {
@@ -142,4 +145,41 @@ export function parseFundamentals(raw: YahooSummaryResponse): FundamentalsData {
     shortFloat: stats?.shortPercentOfFloat?.raw ?? null,
     earnings,
   };
+}
+
+export function parseMarketData(
+  ticker: string,
+  chart: FindStocksYahooChart,
+  summary: FindStocksYahooSummary,
+): TickerMarketData {
+  const chartResult = chart.chart.result?.[0];
+  const highs = chartResult?.indicators?.quote?.[0]?.high ?? [];
+  const currentPrice = chartResult?.meta?.regularMarketPrice ?? null;
+  const validHighs = highs.filter((h): h is number => h !== null);
+  const fiftyTwoWeekHigh = validHighs.length > 0 ? Math.max(...validHighs) : null;
+  const pctBelowHigh =
+    currentPrice !== null && fiftyTwoWeekHigh !== null && fiftyTwoWeekHigh > 0
+      ? ((fiftyTwoWeekHigh - currentPrice) / fiftyTwoWeekHigh) * 100
+      : null;
+
+  const summaryResult = summary.quoteSummary.result?.[0];
+  const forwardPE = summaryResult?.defaultKeyStatistics?.forwardPE?.raw ?? null;
+  const trailingPE = summaryResult?.summaryDetail?.trailingPE?.raw ?? null;
+  const forwardBelowTrailing =
+    forwardPE !== null && trailingPE !== null ? forwardPE < trailingPE : null;
+
+  return { ticker, currentPrice, fiftyTwoWeekHigh, pctBelowHigh, forwardPE, trailingPE, forwardBelowTrailing };
+}
+
+export async function fetchTickerMarketData(ticker: string): Promise<TickerMarketData> {
+  const symbol = encodeURIComponent(ticker.toUpperCase());
+  const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1y`;
+  const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=defaultKeyStatistics%2CsummaryDetail`;
+
+  const [chart, summary] = await Promise.all([
+    fetchYahoo<FindStocksYahooChart>(chartUrl),
+    fetchYahooWithCrumb<FindStocksYahooSummary>(summaryUrl),
+  ]);
+
+  return parseMarketData(ticker, chart, summary);
 }
