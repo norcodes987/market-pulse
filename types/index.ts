@@ -118,3 +118,26 @@ export interface YahooSummaryResponse {
     error?: { code: string; description: string } | null;
   };
 }
+
+export interface BriefRequest {
+  tickers: string[];
+}
+
+export interface StockSummary {
+  ticker: string;
+  summary: string;
+}
+
+export interface StockSignal {
+  ticker: string;
+  signal: 'Buy' | 'Hold' | 'Watch';
+  reason: string;
+}
+
+export interface BriefResult {
+  generatedAt: string;
+  marketMood: string;
+  synthesis: string;
+  summaries: StockSummary[];
+  signals: StockSignal[];
+}
