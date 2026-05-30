@@ -305,11 +305,10 @@ Each API route uses `openai.chat.completions.create` with `response_format: { ty
 
 ---
 
-### Step 1 — Tickers prompt (`gpt-4o-mini`)
+### Step 1 — Tickers (`gpt-4o-mini`)
 
-**System prompt:**
-```
-You are a senior equity analyst. Your job is to identify the 25 publicly traded US stocks
+```typescript
+const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 25 publicly traded US stocks
 most exposed to a given investment theme.
 
 Rules:
@@ -327,21 +326,24 @@ Output schema:
     { "rank": 1, "ticker": "NVDA", "description": "..." },
     ...
   ]
-}
-```
+}`;
 
-**User message:**
-```
-Theme: {{theme}}
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o-mini',
+  messages: [
+    { role: 'system', content: tickersSystemPrompt },
+    { role: 'user',   content: `Theme: ${theme}` },
+  ],
+  response_format: { type: 'json_object' },
+});
 ```
 
 ---
 
-### Step 2 — Scores prompt (`gpt-4o`)
+### Step 2 — Scores (`gpt-4o`)
 
-**System prompt:**
-```
-You are a quantitative equity analyst applying a structured conviction scoring framework.
+```typescript
+const scoresSystemPrompt = `You are a quantitative equity analyst applying a structured conviction scoring framework.
 
 Scoring rules — 100 points maximum:
 
@@ -369,27 +371,27 @@ Output schema:
     { "rank": 1, "ticker": "NVDA", "score": 91, "tier": "Best", "thesis": "..." },
     ...
   ]
-}
-```
+}`;
 
-**User message:**
-```
-Theme: {{theme}}
+const scoresUserPrompt = (theme: string, candidates: TickerCandidate[], marketData: TickerMarketData[]) =>
+  `Theme: ${theme}\n\nCandidates:\n${JSON.stringify(candidates)}\n\nReal-time market data:\n${JSON.stringify(marketData)}`;
 
-Candidates:
-{{candidates as JSON array}}
-
-Real-time market data:
-{{marketData as JSON array}}
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [
+    { role: 'system', content: scoresSystemPrompt },
+    { role: 'user',   content: scoresUserPrompt(theme, candidates, marketData) },
+  ],
+  response_format: { type: 'json_object' },
+});
 ```
 
 ---
 
-### Step 3 — Thesis prompt (`gpt-4o`)
+### Step 3 — Thesis (`gpt-4o`)
 
-**System prompt:**
-```
-You are a portfolio manager writing conviction reports for institutional investors.
+```typescript
+const thesisSystemPrompt = `You are a portfolio manager writing conviction reports for institutional investors.
 For each of the top 3 stocks provided, write a structured thesis with exactly four sections.
 
 Section definitions:
@@ -426,15 +428,19 @@ Output schema:
     },
     ...
   ]
-}
-```
+}`;
 
-**User message:**
-```
-Theme: {{theme}}
+const thesisUserPrompt = (theme: string, topNames: ConvictionScore[]) =>
+  `Theme: ${theme}\n\nTop 3 names to analyze:\n${JSON.stringify(topNames)}`;
 
-Top 3 names to analyze:
-{{topNames as JSON array}}
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [
+    { role: 'system', content: thesisSystemPrompt },
+    { role: 'user',   content: thesisUserPrompt(theme, topNames) },
+  ],
+  response_format: { type: 'json_object' },
+});
 ```
 
 ---
