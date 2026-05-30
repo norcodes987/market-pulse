@@ -94,9 +94,11 @@ Plus a free-text input for custom themes. Selecting a preset fills the input; us
 
 ### Hybrid data approach
 
-The scores route calls Yahoo Finance directly (server-side) for all 25 tickers in parallel via `Promise.allSettled`:
-- **1y chart** → compute 52-week high, compare to current price
-- **v10/finance/quoteSummary** summary + defaultKeyStatistics modules → `forwardPE` and `trailingPE`
+The scores route calls Yahoo Finance directly (server-side) for all 25 tickers in parallel via `Promise.allSettled`. Two endpoints per ticker (50 calls total, all parallel):
+- **Chart (1y):** `https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1y` → extract max of `indicators.quote[0].high` array as 52-week high
+- **Summary:** `https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules=defaultKeyStatistics%2CsummaryDetail` → extract `defaultKeyStatistics.forwardPE.raw` and `summaryDetail.trailingPE.raw`. The existing `YahooSummaryResponse` type covers `defaultKeyStatistics`; a new `FindStocksYahooSummary` type must be added to `types/index.ts` that adds `summaryDetail?: { trailingPE?: { raw: number } }`.
+
+Both calls use the same `User-Agent: Mozilla/5.0` header and 10 s `AbortController` timeout as all other Yahoo routes.
 
 These real-time values are injected into the prompt payload. OpenAI scores the **quality gate** criteria from its training knowledge (clearly labeled "AI-estimated") and applies the **discount gate** scores from the provided real numbers.
 
