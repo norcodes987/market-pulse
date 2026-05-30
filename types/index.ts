@@ -119,25 +119,64 @@ export interface YahooSummaryResponse {
   };
 }
 
-export interface BriefRequest {
-  tickers: string[];
+export interface FindStocksYahooChart {
+  chart: {
+    result: Array<{
+      meta: YahooChartMeta;
+      indicators: {
+        quote: Array<{
+          high: (number | null)[];
+        }>;
+      };
+    }> | null;
+    error: { code: string; description: string } | null;
+  };
 }
 
-export interface StockSummary {
+export interface FindStocksYahooSummary {
+  quoteSummary: {
+    result: Array<{
+      defaultKeyStatistics?: {
+        forwardPE?: { raw: number };
+      };
+      summaryDetail?: {
+        trailingPE?: { raw: number };
+      };
+    }> | null;
+    error?: { code: string; description: string } | null;
+  };
+}
+
+export interface TickerCandidate {
+  rank: number;
   ticker: string;
-  summary: string;
+  description: string;
 }
 
-export interface StockSignal {
+export interface TickerMarketData {
   ticker: string;
-  signal: 'Buy' | 'Hold' | 'Watch';
-  reason: string;
+  currentPrice: number | null;
+  fiftyTwoWeekHigh: number | null;
+  pctBelowHigh: number | null;
+  forwardPE: number | null;
+  trailingPE: number | null;
+  forwardBelowTrailing: boolean | null;
 }
 
-export interface BriefResult {
-  generatedAt: string;
-  marketMood: string;
-  synthesis: string;
-  summaries: StockSummary[];
-  signals: StockSignal[];
+export interface ConvictionScore {
+  rank: number;
+  ticker: string;
+  score: number;
+  tier: 'Best' | 'Strong' | 'Watch' | 'Avoid';
+  thesis: string;
+}
+
+export interface ThesisCard {
+  ticker: string;
+  rank: number;
+  moat: string;
+  drawdown: string;
+  catalyst: string;
+  exit: string;
+  sources: string[];
 }
