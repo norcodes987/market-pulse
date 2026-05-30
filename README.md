@@ -15,6 +15,7 @@ A dark-themed stock watchlist dashboard. Add ticker symbols, get live price card
 - **Tab filtering** — filter the card grid by All / Owned / Watching
 - **Auto-refresh** — quotes refresh every 60 seconds
 - **Isolated errors** — one bad ticker doesn't crash the grid
+- **Find Stocks** — AI-powered theme scanner at `/find`; pick a theme (or type your own), get 25 candidate tickers, conviction scores, and deep thesis cards for the top 3
 
 ## Getting started
 
@@ -31,19 +32,25 @@ Open [http://localhost:3000](http://localhost:3000).
 npm test
 ```
 
-Tests cover `lib/yahoo.ts` (parse helpers), `hooks/useWatchlist.ts`, and `hooks/useMarketOverview.ts`.
+Tests cover `lib/yahoo.ts` (parse helpers), `hooks/useWatchlist.ts`, `hooks/useMarketOverview.ts`, `hooks/useFindStocks.ts`, and all four `components/FindStocks/` components.
 
 ## Project structure
 
 ```
 app/
-  api/quote/route.ts   — proxies Yahoo Finance chart endpoint
-  api/news/route.ts    — proxies Yahoo Finance search endpoint
-  page.tsx             — main page
-components/            — UI components (MarketBar, StockCard, TopBar, NewsDrawer, …)
-hooks/                 — useMarketOverview, useWatchlist, useQuotes, useNews
-lib/yahoo.ts           — server-only parse helpers
-types/index.ts         — shared TypeScript interfaces
+  api/quote/route.ts              — proxies Yahoo Finance chart endpoint
+  api/news/route.ts               — proxies Yahoo Finance search endpoint
+  api/find-stocks/tickers/route.ts — POST: GPT-4o-mini generates 25 candidate tickers
+  api/find-stocks/scores/route.ts  — POST: Yahoo data + GPT-4o conviction scores
+  api/find-stocks/thesis/route.ts  — POST: GPT-4o deep thesis for top 3
+  page.tsx                        — main watchlist page
+  find/page.tsx                   — Find Stocks page (3-step AI workflow)
+components/
+  FindStocks/                     — ThemeSelector, TickerList, ConvictionTable, ThesisCards
+  …                               — MarketBar, StockCard, TopBar, NewsDrawer, …
+hooks/                            — useMarketOverview, useWatchlist, useQuotes, useNews, useFindStocks
+lib/yahoo.ts                      — server-only parse helpers
+types/index.ts                    — shared TypeScript interfaces
 ```
 
 ## Data sources
@@ -130,6 +137,29 @@ All three requests must use **`query2`** (not `query1`). Both the `A3` cookie an
 | EPS estimate | `epsEstimate.raw` | Consensus estimate at time of report |
 | EPS actual | `epsActual.raw` | Reported EPS |
 | Surprise % | `surprisePercent.raw` | Fraction; displayed × 100 |
+
+### Find Stocks — `POST /api/find-stocks/*`
+
+Requires `OPENAI_API_KEY` in `.env.local`. The three routes run sequentially, orchestrated by `useFindStocks`:
+
+| Route | Model | Purpose |
+|---|---|---|
+| `POST /api/find-stocks/tickers` | `gpt-4o-mini` | Returns 25 US-listed tickers most exposed to the theme |
+| `POST /api/find-stocks/scores` | `gpt-4o` | Scores each ticker 0–100 via a conviction framework |
+| `POST /api/find-stocks/thesis` | `gpt-4o` | Writes a deep thesis (moat / drawdown / catalyst / exit) for the top 3 |
+
+**Conviction scoring (100 pts max):**
+
+| Gate | Criterion | Points | Source |
+|---|---|---|---|
+| Quality | ROIC ≥ 15% | 20 | AI training knowledge |
+| Quality | FCF positive (TTM) | 20 | AI training knowledge |
+| Quality | Net Debt/EBITDA < 2× | 20 | AI training knowledge |
+| Quality | Revenue growing YoY | 20 | AI training knowledge |
+| Discount | Price ≥ 15% below 52-week high | 10 | Yahoo Finance (1y chart, live) |
+| Discount | Forward P/E < Trailing P/E | 10 | Yahoo Finance (quoteSummary, live) |
+
+Tiers: **Best** 80–100 · **Strong** 65–79 · **Watch** 50–64 · **Avoid** < 50
 
 ### Market overview bar
 

@@ -50,11 +50,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'theme and candidates are required' }, { status: 400 });
   }
 
+  const capped = candidates.slice(0, 50);
   const rawResults = await Promise.allSettled(
-    candidates.map((c) => fetchTickerMarketData(c.ticker)),
+    capped.map((c) => fetchTickerMarketData(c.ticker)),
   );
 
-  const marketData: TickerMarketData[] = candidates.map((c, i) => {
+  const marketData: TickerMarketData[] = capped.map((c, i) => {
     const result = rawResults[i];
     if (result.status === 'fulfilled') return result.value;
     console.error(`[/api/find-stocks/scores] market data failed for ${c.ticker}:`, result.reason?.message);
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: scoresSystemPrompt },
-          { role: 'user', content: scoresUserPrompt(theme, candidates, marketData) },
+          { role: 'user', content: scoresUserPrompt(theme, capped, marketData) },
         ],
         response_format: { type: 'json_object' },
       },

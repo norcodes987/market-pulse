@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useFindStocks } from '@/hooks/useFindStocks';
 import { ThemeSelector } from '@/components/FindStocks/ThemeSelector';
@@ -140,7 +141,7 @@ function StepSection({
   step: number;
   title: string;
   loading?: boolean;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }) {
   return (
     <div className="mb-8">
