@@ -70,6 +70,9 @@ export async function POST(req: NextRequest) {
       forwardPE: null,
       trailingPE: null,
       forwardBelowTrailing: null,
+      freeCashflowPositive: null,
+      revenueGrowingYoY: null,
+      netDebtBelowTwoTimesEbitda: null,
     };
   });
 
