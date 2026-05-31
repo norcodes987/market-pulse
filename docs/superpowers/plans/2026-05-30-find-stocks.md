@@ -12,28 +12,29 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `types/index.ts` | Modify | Add `TickerCandidate`, `TickerMarketData`, `ConvictionScore`, `ThesisCard`, `FindStocksYahooChart`, `FindStocksYahooSummary` |
-| `lib/yahoo.ts` | Modify | Add `parseMarketData` pure function and `fetchTickerMarketData` helper |
-| `lib/__tests__/yahoo.test.ts` | Modify | Add `parseMarketData` unit tests |
-| `app/api/find-stocks/tickers/route.ts` | Create | POST — calls OpenAI gpt-4o-mini, returns 25 `TickerCandidate[]` |
-| `app/api/find-stocks/scores/route.ts` | Create | POST — fetches Yahoo market data for 25 tickers, calls OpenAI gpt-4o, returns `ConvictionScore[]` |
-| `app/api/find-stocks/thesis/route.ts` | Create | POST — calls OpenAI gpt-4o with top 3 tickers, returns `ThesisCard[]` |
-| `hooks/useFindStocks.ts` | Create | Orchestrates 3 sequential API calls; exposes typed phase state, `run`, `reset` |
-| `hooks/__tests__/useFindStocks.test.ts` | Create | Hook phase-transition tests using mocked `fetch` |
-| `components/FindStocks/ThemeSelector.tsx` | Create | 8 preset pills + controlled text input + submit button |
-| `components/FindStocks/TickerList.tsx` | Create | Numbered table of 25 candidates |
-| `components/FindStocks/ConvictionTable.tsx` | Create | Ranked table with tier badges |
-| `components/FindStocks/ThesisCards.tsx` | Create | 3 deep thesis cards |
-| `app/find/page.tsx` | Create | Client page; owns theme state, renders hook-driven steps |
-| `components/TopBar.tsx` | Modify | Add "Find Stocks" link between logo and AddTickerForm |
+| File                                        | Action | Responsibility                                                                                                               |
+| ------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `types/index.ts`                            | Modify | Add `TickerCandidate`, `TickerMarketData`, `ConvictionScore`, `ThesisCard`, `FindStocksYahooChart`, `FindStocksYahooSummary` |
+| `lib/yahoo.ts`                              | Modify | Add `parseMarketData` pure function and `fetchTickerMarketData` helper                                                       |
+| `lib/__tests__/yahoo.test.ts`               | Modify | Add `parseMarketData` unit tests                                                                                             |
+| `app/api/find-stocks/tickers/route.ts`      | Create | POST — calls OpenAI gpt-4o-mini, returns 25 `TickerCandidate[]`                                                              |
+| `app/api/find-stocks/scores/route.ts`       | Create | POST — fetches Yahoo market data for 25 tickers, calls OpenAI gpt-4o, returns `ConvictionScore[]`                            |
+| `app/api/find-stocks/thesis/route.ts`       | Create | POST — calls OpenAI gpt-4o with top 3 tickers, returns `ThesisCard[]`                                                        |
+| `hooks/useFindStocks.ts`                    | Create | Orchestrates 3 sequential API calls; exposes typed phase state, `run`, `reset`                                               |
+| `hooks/__tests__/useFindStocks.test.ts`     | Create | Hook phase-transition tests using mocked `fetch`                                                                             |
+| `components/FindStocks/ThemeSelector.tsx`   | Create | 8 preset pills + controlled text input + submit button                                                                       |
+| `components/FindStocks/TickerList.tsx`      | Create | Numbered table of 25 candidates                                                                                              |
+| `components/FindStocks/ConvictionTable.tsx` | Create | Ranked table with tier badges                                                                                                |
+| `components/FindStocks/ThesisCards.tsx`     | Create | 3 deep thesis cards                                                                                                          |
+| `app/find/page.tsx`                         | Create | Client page; owns theme state, renders hook-driven steps                                                                     |
+| `components/TopBar.tsx`                     | Modify | Add "Find Stocks" link between logo and AddTickerForm                                                                        |
 
 ---
 
 ## Task 1: Add Types
 
 **Files:**
+
 - Modify: `types/index.ts`
 
 - [ ] **Step 1: Append the new interfaces to `types/index.ts`**
@@ -124,6 +125,7 @@ git commit -m "feat: add Find Stocks types (TickerCandidate, ConvictionScore, Th
 ## Task 2: Yahoo Market Data Helper
 
 **Files:**
+
 - Modify: `lib/yahoo.ts`
 - Modify: `lib/__tests__/yahoo.test.ts`
 
@@ -202,7 +204,10 @@ describe('parseMarketData', () => {
 
   it('returns all null fields when chart result is null', () => {
     const emptyChart: FindStocksYahooChart = {
-      chart: { result: null, error: { code: 'Not Found', description: 'Not found' } },
+      chart: {
+        result: null,
+        error: { code: 'Not Found', description: 'Not found' },
+      },
     };
     const emptySummary: FindStocksYahooSummary = {
       quoteSummary: { result: null },
@@ -250,7 +255,8 @@ export function parseMarketData(
   const highs = chartResult?.indicators?.quote?.[0]?.high ?? [];
   const currentPrice = chartResult?.meta?.regularMarketPrice ?? null;
   const validHighs = highs.filter((h): h is number => h !== null);
-  const fiftyTwoWeekHigh = validHighs.length > 0 ? Math.max(...validHighs) : null;
+  const fiftyTwoWeekHigh =
+    validHighs.length > 0 ? Math.max(...validHighs) : null;
   const pctBelowHigh =
     currentPrice !== null && fiftyTwoWeekHigh !== null && fiftyTwoWeekHigh > 0
       ? ((fiftyTwoWeekHigh - currentPrice) / fiftyTwoWeekHigh) * 100
@@ -262,10 +268,20 @@ export function parseMarketData(
   const forwardBelowTrailing =
     forwardPE !== null && trailingPE !== null ? forwardPE < trailingPE : null;
 
-  return { ticker, currentPrice, fiftyTwoWeekHigh, pctBelowHigh, forwardPE, trailingPE, forwardBelowTrailing };
+  return {
+    ticker,
+    currentPrice,
+    fiftyTwoWeekHigh,
+    pctBelowHigh,
+    forwardPE,
+    trailingPE,
+    forwardBelowTrailing,
+  };
 }
 
-export async function fetchTickerMarketData(ticker: string): Promise<TickerMarketData> {
+export async function fetchTickerMarketData(
+  ticker: string,
+): Promise<TickerMarketData> {
   const symbol = encodeURIComponent(ticker.toUpperCase());
   const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1y`;
   const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=defaultKeyStatistics%2CsummaryDetail`;
@@ -299,6 +315,7 @@ git commit -m "feat: add parseMarketData and fetchTickerMarketData to yahoo help
 ## Task 3: Tickers API Route
 
 **Files:**
+
 - Create: `app/api/find-stocks/tickers/route.ts`
 
 - [ ] **Step 1: Create the directory and route file**
@@ -310,7 +327,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 25 publicly traded US stocks
+const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 10 publicly traded US stocks
 most exposed to a given investment theme.
 
 Rules:
@@ -384,6 +401,7 @@ git commit -m "feat: add /api/find-stocks/tickers route (gpt-4o-mini)"
 ## Task 4: Scores API Route
 
 **Files:**
+
 - Create: `app/api/find-stocks/scores/route.ts`
 
 - [ ] **Step 1: Create the route file**
@@ -436,10 +454,16 @@ const scoresUserPrompt = (
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { theme, candidates } = body as { theme?: string; candidates?: TickerCandidate[] };
+  const { theme, candidates } = body as {
+    theme?: string;
+    candidates?: TickerCandidate[];
+  };
 
   if (!theme || !Array.isArray(candidates) || candidates.length === 0) {
-    return NextResponse.json({ error: 'theme and candidates are required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'theme and candidates are required' },
+      { status: 400 },
+    );
   }
 
   const rawResults = await Promise.allSettled(
@@ -449,7 +473,10 @@ export async function POST(req: NextRequest) {
   const marketData: TickerMarketData[] = candidates.map((c, i) => {
     const result = rawResults[i];
     if (result.status === 'fulfilled') return result.value;
-    console.error(`[/api/find-stocks/scores] market data failed for ${c.ticker}:`, result.reason?.message);
+    console.error(
+      `[/api/find-stocks/scores] market data failed for ${c.ticker}:`,
+      result.reason?.message,
+    );
     return {
       ticker: c.ticker,
       currentPrice: null,
@@ -470,7 +497,10 @@ export async function POST(req: NextRequest) {
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: scoresSystemPrompt },
-          { role: 'user', content: scoresUserPrompt(theme, candidates, marketData) },
+          {
+            role: 'user',
+            content: scoresUserPrompt(theme, candidates, marketData),
+          },
         ],
         response_format: { type: 'json_object' },
       },
@@ -508,6 +538,7 @@ git commit -m "feat: add /api/find-stocks/scores route (hybrid Yahoo + gpt-4o)"
 ## Task 5: Thesis API Route
 
 **Files:**
+
 - Create: `app/api/find-stocks/thesis/route.ts`
 
 - [ ] **Step 1: Create the route file**
@@ -564,10 +595,16 @@ const thesisUserPrompt = (theme: string, topNames: ConvictionScore[]) =>
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
-  const { theme, topNames } = body as { theme?: string; topNames?: ConvictionScore[] };
+  const { theme, topNames } = body as {
+    theme?: string;
+    topNames?: ConvictionScore[];
+  };
 
   if (!theme || !Array.isArray(topNames) || topNames.length === 0) {
-    return NextResponse.json({ error: 'theme and topNames are required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'theme and topNames are required' },
+      { status: 400 },
+    );
   }
 
   const controller = new AbortController();
@@ -617,6 +654,7 @@ git commit -m "feat: add /api/find-stocks/thesis route (gpt-4o deep thesis)"
 ## Task 6: `useFindStocks` Hook
 
 **Files:**
+
 - Create: `hooks/useFindStocks.ts`
 - Create: `hooks/__tests__/useFindStocks.test.ts`
 
@@ -628,12 +666,26 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useFindStocks } from '@/hooks/useFindStocks';
 
 const mockCandidates = [{ rank: 1, ticker: 'NVDA', description: 'GPU maker' }];
-const mockScores = [{ rank: 1, ticker: 'NVDA', score: 91, tier: 'Best' as const, thesis: 'Dominant AI chip' }];
-const mockThesis = [{
-  ticker: 'NVDA', rank: 1,
-  moat: 'moat', drawdown: 'drawdown', catalyst: 'catalyst', exit: 'exit',
-  sources: [],
-}];
+const mockScores = [
+  {
+    rank: 1,
+    ticker: 'NVDA',
+    score: 91,
+    tier: 'Best' as const,
+    thesis: 'Dominant AI chip',
+  },
+];
+const mockThesis = [
+  {
+    ticker: 'NVDA',
+    rank: 1,
+    moat: 'moat',
+    drawdown: 'drawdown',
+    catalyst: 'catalyst',
+    exit: 'exit',
+    sources: [],
+  },
+];
 
 function makeFetch(...responses: object[]) {
   let call = 0;
@@ -646,7 +698,9 @@ function makeFetch(...responses: object[]) {
   });
 }
 
-afterEach(() => { jest.restoreAllMocks(); });
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe('useFindStocks', () => {
   it('starts in idle phase', () => {
@@ -661,7 +715,9 @@ describe('useFindStocks', () => {
       { thesis: mockThesis },
     );
     const { result } = renderHook(() => useFindStocks());
-    act(() => { result.current.run('AI Infrastructure'); });
+    act(() => {
+      result.current.run('AI Infrastructure');
+    });
     await waitFor(() => expect(result.current.state.phase).toBe('complete'));
     const state = result.current.state;
     if (state.phase === 'complete') {
@@ -674,7 +730,9 @@ describe('useFindStocks', () => {
   it('enters error phase with step=1 when tickers call fails', async () => {
     global.fetch = makeFetch({ error: 'OpenAI unavailable' });
     const { result } = renderHook(() => useFindStocks());
-    act(() => { result.current.run('AI Infrastructure'); });
+    act(() => {
+      result.current.run('AI Infrastructure');
+    });
     await waitFor(() => expect(result.current.state.phase).toBe('error'));
     const state = result.current.state;
     if (state.phase === 'error') {
@@ -689,7 +747,9 @@ describe('useFindStocks', () => {
       { error: 'OpenAI timeout' },
     );
     const { result } = renderHook(() => useFindStocks());
-    act(() => { result.current.run('AI Infrastructure'); });
+    act(() => {
+      result.current.run('AI Infrastructure');
+    });
     await waitFor(() => expect(result.current.state.phase).toBe('error'));
     const state = result.current.state;
     if (state.phase === 'error') {
@@ -705,7 +765,9 @@ describe('useFindStocks', () => {
       { error: 'OpenAI timeout' },
     );
     const { result } = renderHook(() => useFindStocks());
-    act(() => { result.current.run('AI Infrastructure'); });
+    act(() => {
+      result.current.run('AI Infrastructure');
+    });
     await waitFor(() => expect(result.current.state.phase).toBe('error'));
     const state = result.current.state;
     if (state.phase === 'error') {
@@ -721,9 +783,13 @@ describe('useFindStocks', () => {
       { thesis: mockThesis },
     );
     const { result } = renderHook(() => useFindStocks());
-    act(() => { result.current.run('AI Infrastructure'); });
+    act(() => {
+      result.current.run('AI Infrastructure');
+    });
     await waitFor(() => expect(result.current.state.phase).toBe('complete'));
-    act(() => { result.current.reset(); });
+    act(() => {
+      result.current.reset();
+    });
     expect(result.current.state.phase).toBe('idle');
   });
 });
@@ -750,9 +816,24 @@ export type FindStocksPhase =
   | { phase: 'idle' }
   | { phase: 'tickers-loading' }
   | { phase: 'scores-loading'; candidates: TickerCandidate[] }
-  | { phase: 'thesis-loading'; candidates: TickerCandidate[]; scores: ConvictionScore[] }
-  | { phase: 'complete'; candidates: TickerCandidate[]; scores: ConvictionScore[]; thesis: ThesisCard[] }
-  | { phase: 'error'; step: 1 | 2 | 3; message: string; candidates?: TickerCandidate[]; scores?: ConvictionScore[] };
+  | {
+      phase: 'thesis-loading';
+      candidates: TickerCandidate[];
+      scores: ConvictionScore[];
+    }
+  | {
+      phase: 'complete';
+      candidates: TickerCandidate[];
+      scores: ConvictionScore[];
+      thesis: ThesisCard[];
+    }
+  | {
+      phase: 'error';
+      step: 1 | 2 | 3;
+      message: string;
+      candidates?: TickerCandidate[];
+      scores?: ConvictionScore[];
+    };
 
 export function useFindStocks() {
   const [state, setState] = useState<FindStocksPhase>({ phase: 'idle' });
@@ -771,7 +852,11 @@ export function useFindStocks() {
       if (!res.ok) throw new Error(data.error ?? 'Step 1 failed');
       candidates = data.candidates;
     } catch (err) {
-      setState({ phase: 'error', step: 1, message: err instanceof Error ? err.message : 'Step 1 failed' });
+      setState({
+        phase: 'error',
+        step: 1,
+        message: err instanceof Error ? err.message : 'Step 1 failed',
+      });
       return;
     }
 
@@ -788,7 +873,12 @@ export function useFindStocks() {
       if (!res.ok) throw new Error(data.error ?? 'Step 2 failed');
       scores = data.scores;
     } catch (err) {
-      setState({ phase: 'error', step: 2, message: err instanceof Error ? err.message : 'Step 2 failed', candidates });
+      setState({
+        phase: 'error',
+        step: 2,
+        message: err instanceof Error ? err.message : 'Step 2 failed',
+        candidates,
+      });
       return;
     }
 
@@ -806,7 +896,13 @@ export function useFindStocks() {
       if (!res.ok) throw new Error(data.error ?? 'Step 3 failed');
       thesis = data.thesis;
     } catch (err) {
-      setState({ phase: 'error', step: 3, message: err instanceof Error ? err.message : 'Step 3 failed', candidates, scores });
+      setState({
+        phase: 'error',
+        step: 3,
+        message: err instanceof Error ? err.message : 'Step 3 failed',
+        candidates,
+        scores,
+      });
       return;
     }
 
@@ -839,6 +935,7 @@ git commit -m "feat: add useFindStocks hook with phase state machine"
 ## Task 7: ThemeSelector Component
 
 **Files:**
+
 - Create: `components/FindStocks/ThemeSelector.tsx`
 - Create: `components/FindStocks/__tests__/ThemeSelector.test.tsx`
 
@@ -994,6 +1091,7 @@ git commit -m "feat: add ThemeSelector component with 8 preset pills"
 ## Task 8: TickerList Component
 
 **Files:**
+
 - Create: `components/FindStocks/TickerList.tsx`
 - Create: `components/FindStocks/__tests__/TickerList.test.tsx`
 
@@ -1087,6 +1185,7 @@ git commit -m "feat: add TickerList component"
 ## Task 9: ConvictionTable Component
 
 **Files:**
+
 - Create: `components/FindStocks/ConvictionTable.tsx`
 - Create: `components/FindStocks/__tests__/ConvictionTable.test.tsx`
 
@@ -1210,6 +1309,7 @@ git commit -m "feat: add ConvictionTable component with tier color-coding"
 ## Task 10: ThesisCards Component
 
 **Files:**
+
 - Create: `components/FindStocks/ThesisCards.tsx`
 - Create: `components/FindStocks/__tests__/ThesisCards.test.tsx`
 
@@ -1343,6 +1443,7 @@ git commit -m "feat: add ThesisCards component"
 ## Task 11: Find Page
 
 **Files:**
+
 - Create: `app/find/page.tsx`
 
 - [ ] **Step 1: Create the page**
@@ -1538,6 +1639,7 @@ git commit -m "feat: add /find page with 3-step Find Stocks workflow"
 ## Task 12: TopBar Navigation
 
 **Files:**
+
 - Modify: `components/TopBar.tsx`
 
 - [ ] **Step 1: Update TopBar to add the Find Stocks link**

@@ -168,13 +168,27 @@ export function parseMarketData(
   const forwardBelowTrailing =
     forwardPE !== null && trailingPE !== null ? forwardPE < trailingPE : null;
 
-  return { ticker, currentPrice, fiftyTwoWeekHigh, pctBelowHigh, forwardPE, trailingPE, forwardBelowTrailing };
+  const rawFCF = summaryResult?.financialData?.freeCashflow?.raw ?? null;
+  const rawRevenueGrowth = summaryResult?.financialData?.revenueGrowth?.raw ?? null;
+  const freeCashflowPositive = rawFCF !== null ? rawFCF > 0 : null;
+  const revenueGrowingYoY = rawRevenueGrowth !== null ? rawRevenueGrowth > 0 : null;
+
+  const totalDebt = summaryResult?.financialData?.totalDebt?.raw ?? null;
+  const totalCash = summaryResult?.financialData?.totalCash?.raw ?? null;
+  const ebitda = summaryResult?.financialData?.ebitda?.raw ?? null;
+  let netDebtBelowTwoTimesEbitda: boolean | null = null;
+  if (totalDebt !== null && ebitda !== null && ebitda > 0) {
+    const netDebt = totalDebt - (totalCash ?? 0);
+    netDebtBelowTwoTimesEbitda = netDebt / ebitda < 2;
+  }
+
+  return { ticker, currentPrice, fiftyTwoWeekHigh, pctBelowHigh, forwardPE, trailingPE, forwardBelowTrailing, freeCashflowPositive, revenueGrowingYoY, netDebtBelowTwoTimesEbitda };
 }
 
 export async function fetchTickerMarketData(ticker: string): Promise<TickerMarketData> {
   const symbol = encodeURIComponent(ticker.toUpperCase());
   const chartUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1y`;
-  const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=defaultKeyStatistics%2CsummaryDetail`;
+  const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=defaultKeyStatistics%2CsummaryDetail%2CfinancialData`;
 
   const [chart, summary] = await Promise.all([
     fetchYahoo<FindStocksYahooChart>(chartUrl),

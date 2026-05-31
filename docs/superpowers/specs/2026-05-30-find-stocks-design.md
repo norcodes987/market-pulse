@@ -24,6 +24,7 @@ A dedicated `/find` page that runs a three-step AI-powered agentic workflow. The
 ## Theme Selector
 
 Eight preset pill buttons:
+
 1. AI Infrastructure
 2. Semiconductors
 3. Cybersecurity
@@ -43,11 +44,13 @@ Plus a free-text input for custom themes. Selecting a preset fills the input; us
 **Model:** `gpt-4o-mini`
 
 **Input:**
+
 ```json
 { "theme": "AI Infrastructure" }
 ```
 
 **Output:**
+
 ```json
 {
   "candidates": [
@@ -57,7 +60,7 @@ Plus a free-text input for custom themes. Selecting a preset fills the input; us
 }
 ```
 
-**Prompt contract:** System prompt instructs the model to act as an equity analyst identifying 25 publicly traded US stocks most exposed to the given theme. Output must be valid JSON matching the schema above. Tickers must be real, US-listed symbols.
+**Prompt contract:** System prompt instructs the model to act as an equity analyst identifying 10 publicly traded US stocks most exposed to the given theme. Output must be valid JSON matching the schema above. Tickers must be real, US-listed symbols.
 
 **UI:** Renders as a two-column list (`#  Ticker  Description`). Appears as soon as Step 1 completes; Step 2 spinner starts immediately.
 
@@ -95,6 +98,7 @@ Plus a free-text input for custom themes. Selecting a preset fills the input; us
 ### Hybrid data approach
 
 The scores route calls Yahoo Finance directly (server-side) for all 25 tickers in parallel via `Promise.allSettled`. Two endpoints per ticker (50 calls total, all parallel):
+
 - **Chart (1y):** `https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=1y` → extract max of `indicators.quote[0].high` array as 52-week high
 - **Summary:** `https://query1.finance.yahoo.com/v10/finance/quoteSummary/{ticker}?modules=defaultKeyStatistics%2CsummaryDetail` → extract `defaultKeyStatistics.forwardPE.raw` and `summaryDetail.trailingPE.raw`. The existing `YahooSummaryResponse` type covers `defaultKeyStatistics`; a new `FindStocksYahooSummary` type must be added to `types/index.ts` that adds `summaryDetail?: { trailingPE?: { raw: number } }`.
 
@@ -103,6 +107,7 @@ Both calls use the same `User-Agent: Mozilla/5.0` header and 10 s `AbortControll
 These real-time values are injected into the prompt payload. OpenAI scores the **quality gate** criteria from its training knowledge (clearly labeled "AI-estimated") and applies the **discount gate** scores from the provided real numbers.
 
 **Input:**
+
 ```json
 {
   "theme": "AI Infrastructure",
@@ -123,6 +128,7 @@ These real-time values are injected into the prompt payload. OpenAI scores the *
 ```
 
 **Output:**
+
 ```json
 {
   "scores": [
@@ -150,18 +156,38 @@ These real-time values are injected into the prompt payload. OpenAI scores the *
 Takes only the top 3 tickers from the Step 2 ranked output.
 
 **Input:**
+
 ```json
 {
   "theme": "AI Infrastructure",
   "topNames": [
-    { "rank": 1, "ticker": "NVDA", "score": 91, "tier": "Best", "thesis": "..." },
-    { "rank": 2, "ticker": "MSFT", "score": 82, "tier": "Best", "thesis": "..." },
-    { "rank": 3, "ticker": "AVGO", "score": 76, "tier": "Strong", "thesis": "..." }
+    {
+      "rank": 1,
+      "ticker": "NVDA",
+      "score": 91,
+      "tier": "Best",
+      "thesis": "..."
+    },
+    {
+      "rank": 2,
+      "ticker": "MSFT",
+      "score": 82,
+      "tier": "Best",
+      "thesis": "..."
+    },
+    {
+      "rank": 3,
+      "ticker": "AVGO",
+      "score": 76,
+      "tier": "Strong",
+      "thesis": "..."
+    }
   ]
 }
 ```
 
 **Output:**
+
 ```json
 {
   "thesis": [
@@ -180,6 +206,7 @@ Takes only the top 3 tickers from the Step 2 ranked output.
 ```
 
 **Each card contains:**
+
 1. **The Moat** — what makes the competitive advantage durable
 2. **The Drawdown** — why the stock is on sale / undervalued now
 3. **The Catalyst** — what unlocks upside in the next 12 months
@@ -240,10 +267,29 @@ type FindStocksPhase =
   | { phase: 'tickers-loading' }
   | { phase: 'tickers-done'; candidates: TickerCandidate[] }
   | { phase: 'scores-loading'; candidates: TickerCandidate[] }
-  | { phase: 'scores-done'; candidates: TickerCandidate[]; scores: ConvictionScore[] }
-  | { phase: 'thesis-loading'; candidates: TickerCandidate[]; scores: ConvictionScore[] }
-  | { phase: 'complete'; candidates: TickerCandidate[]; scores: ConvictionScore[]; thesis: ThesisCard[] }
-  | { phase: 'error'; step: 1 | 2 | 3; message: string; candidates?: TickerCandidate[]; scores?: ConvictionScore[] };
+  | {
+      phase: 'scores-done';
+      candidates: TickerCandidate[];
+      scores: ConvictionScore[];
+    }
+  | {
+      phase: 'thesis-loading';
+      candidates: TickerCandidate[];
+      scores: ConvictionScore[];
+    }
+  | {
+      phase: 'complete';
+      candidates: TickerCandidate[];
+      scores: ConvictionScore[];
+      thesis: ThesisCard[];
+    }
+  | {
+      phase: 'error';
+      step: 1 | 2 | 3;
+      message: string;
+      candidates?: TickerCandidate[];
+      scores?: ConvictionScore[];
+    };
 ```
 
 Exposes: `state: FindStocksPhase`, `run(theme: string): void`, `reset(): void`.
@@ -254,12 +300,12 @@ The error phase carries whatever partial data was accumulated before failure, so
 
 ## Components
 
-| Component | File | Props |
-|-----------|------|-------|
-| `ThemeSelector` | `components/FindStocks/ThemeSelector.tsx` | `value`, `onChange`, `onSubmit`, `loading` |
-| `TickerList` | `components/FindStocks/TickerList.tsx` | `candidates: TickerCandidate[]` |
-| `ConvictionTable` | `components/FindStocks/ConvictionTable.tsx` | `scores: ConvictionScore[]` |
-| `ThesisCards` | `components/FindStocks/ThesisCards.tsx` | `thesis: ThesisCard[]` |
+| Component         | File                                        | Props                                      |
+| ----------------- | ------------------------------------------- | ------------------------------------------ |
+| `ThemeSelector`   | `components/FindStocks/ThemeSelector.tsx`   | `value`, `onChange`, `onSubmit`, `loading` |
+| `TickerList`      | `components/FindStocks/TickerList.tsx`      | `candidates: TickerCandidate[]`            |
+| `ConvictionTable` | `components/FindStocks/ConvictionTable.tsx` | `scores: ConvictionScore[]`                |
+| `ThesisCards`     | `components/FindStocks/ThesisCards.tsx`     | `thesis: ThesisCard[]`                     |
 
 All components are pure presentational — no data fetching, no local state.
 
@@ -290,12 +336,12 @@ Requires `OPENAI_API_KEY` in `.env.local`. The OpenAI SDK (`openai` package) is 
 
 ## Cost Estimate
 
-| Step | Model | Est. tokens/run | Est. cost/run |
-|------|-------|----------------|--------------|
-| Step 1 — Tickers | `gpt-4o-mini` | ~1,350 | ~$0.001 |
-| Step 2 — Scores | `gpt-4o` | ~2,500 | ~$0.026 |
-| Step 3 — Thesis | `gpt-4o` | ~3,100 | ~$0.023 |
-| **Total** | | **~6,950** | **~$0.05/run** |
+| Step             | Model         | Est. tokens/run | Est. cost/run  |
+| ---------------- | ------------- | --------------- | -------------- |
+| Step 1 — Tickers | `gpt-4o-mini` | ~1,350          | ~$0.001        |
+| Step 2 — Scores  | `gpt-4o`      | ~2,500          | ~$0.026        |
+| Step 3 — Thesis  | `gpt-4o`      | ~3,100          | ~$0.023        |
+| **Total**        |               | **~6,950**      | **~$0.05/run** |
 
 ---
 
@@ -308,7 +354,7 @@ Each API route uses `openai.chat.completions.create` with `response_format: { ty
 ### Step 1 — Tickers (`gpt-4o-mini`)
 
 ```typescript
-const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 25 publicly traded US stocks
+const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 10 publicly traded US stocks
 most exposed to a given investment theme.
 
 Rules:
@@ -332,7 +378,7 @@ const response = await openai.chat.completions.create({
   model: 'gpt-4o-mini',
   messages: [
     { role: 'system', content: tickersSystemPrompt },
-    { role: 'user',   content: `Theme: ${theme}` },
+    { role: 'user', content: `Theme: ${theme}` },
   ],
   response_format: { type: 'json_object' },
 });
@@ -373,14 +419,18 @@ Output schema:
   ]
 }`;
 
-const scoresUserPrompt = (theme: string, candidates: TickerCandidate[], marketData: TickerMarketData[]) =>
+const scoresUserPrompt = (
+  theme: string,
+  candidates: TickerCandidate[],
+  marketData: TickerMarketData[],
+) =>
   `Theme: ${theme}\n\nCandidates:\n${JSON.stringify(candidates)}\n\nReal-time market data:\n${JSON.stringify(marketData)}`;
 
 const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [
     { role: 'system', content: scoresSystemPrompt },
-    { role: 'user',   content: scoresUserPrompt(theme, candidates, marketData) },
+    { role: 'user', content: scoresUserPrompt(theme, candidates, marketData) },
   ],
   response_format: { type: 'json_object' },
 });
@@ -437,7 +487,7 @@ const response = await openai.chat.completions.create({
   model: 'gpt-4o',
   messages: [
     { role: 'system', content: thesisSystemPrompt },
-    { role: 'user',   content: thesisUserPrompt(theme, topNames) },
+    { role: 'user', content: thesisUserPrompt(theme, topNames) },
   ],
   response_format: { type: 'json_object' },
 });

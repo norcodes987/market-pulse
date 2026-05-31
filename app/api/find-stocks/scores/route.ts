@@ -9,11 +9,14 @@ const scoresSystemPrompt = `You are a quantitative equity analyst applying a str
 
 Scoring rules — 100 points maximum:
 
-QUALITY GATE (20 points each, 80 max) — score from your training knowledge:
-  - ROIC >= 15%: award 20 if true, 0 if false or unknown
-  - Free Cash Flow positive (TTM): award 20 if true, 0 if false or unknown
-  - Net Debt / EBITDA < 2x: award 20 if true, 0 if false or unknown
-  - Revenue growing year over year: award 20 if true, 0 if false or unknown
+QUALITY GATE (20 points each, 80 max):
+  - ROIC >= 15%: score from your training knowledge — award 20 if true, 0 if false or unknown
+  - Free Cash Flow positive (TTM): use freeCashflowPositive from the real-time market data provided —
+    award 20 if true, 0 if false; if null, fall back to training knowledge
+  - Net Debt / EBITDA < 2x: use netDebtBelowTwoTimesEbitda from the real-time market data provided —
+    award 20 if true, 0 if false; if null, fall back to training knowledge
+  - Revenue growing year over year: use revenueGrowingYoY from the real-time market data provided —
+    award 20 if true, 0 if false; if null, fall back to training knowledge
 
 DISCOUNT GATE (10 points each, 20 max) — use the real-time market data provided:
   - Price >= 15% below 52-week high: award 10 if pctBelowHigh >= 15, else 0
@@ -50,7 +53,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'theme and candidates are required' }, { status: 400 });
   }
 
-  const capped = candidates.slice(0, 50);
+  const capped = candidates.slice(0, 10);
   const rawResults = await Promise.allSettled(
     capped.map((c) => fetchTickerMarketData(c.ticker)),
   );

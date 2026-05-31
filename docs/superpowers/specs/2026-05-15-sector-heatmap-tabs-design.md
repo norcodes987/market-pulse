@@ -130,6 +130,7 @@ Pure derived computation in `page.tsx` render — no new state, no fetch, no eff
 ## Testing
 
 **`hooks/__tests__/useWatchlist.test.ts`** — extend existing tests to cover:
+
 - `setTag` flips a ticker's tag and persists to localStorage
 - `removeTicker` removes the full `WatchlistEntry` (not just the ticker string)
 - Migration: old `string[]` format in localStorage is converted to `WatchlistEntry[]` on mount
@@ -140,14 +141,14 @@ No new test files needed. `TabBar` is purely presentational (no logic). `MarketB
 
 ## File Change Summary
 
-| File | Change |
-|---|---|
-| `types/index.ts` | Add `WatchlistEntry` interface |
-| `hooks/useWatchlist.ts` | New data model, `setTag`, migration logic |
-| `hooks/useMarketOverview.ts` | Add `SECTOR_TICKERS`, fetch all 15 tickers |
-| `components/MarketBar.tsx` | Render sector pills with `│` divider |
-| `components/TabBar.tsx` | **New** — All / Owned / Watching tab strip |
-| `components/StockCard.tsx` | Badge + `onTagToggle` + `onRemove` |
-| `components/WatchlistBar.tsx` | **Deleted** |
-| `app/page.tsx` | Tab state, filtering, updated props |
-| `hooks/__tests__/useWatchlist.test.ts` | Extend with new test cases |
+| File                                   | Change                                     |
+| -------------------------------------- | ------------------------------------------ |
+| `types/index.ts`                       | Add `WatchlistEntry` interface             |
+| `hooks/useWatchlist.ts`                | New data model, `setTag`, migration logic  |
+| `hooks/useMarketOverview.ts`           | Add `SECTOR_TICKERS`, fetch all 15 tickers |
+| `components/MarketBar.tsx`             | Render sector pills with `│` divider       |
+| `components/TabBar.tsx`                | **New** — All / Owned / Watching tab strip |
+| `components/StockCard.tsx`             | Badge + `onTagToggle` + `onRemove`         |
+| `components/WatchlistBar.tsx`          | **Deleted**                                |
+| `app/page.tsx`                         | Tab state, filtering, updated props        |
+| `hooks/__tests__/useWatchlist.test.ts` | Extend with new test cases                 |

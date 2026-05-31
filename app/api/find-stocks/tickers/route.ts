@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 25 publicly traded US stocks
+const tickersSystemPrompt = `You are a senior equity analyst. Your job is to identify the 10 publicly traded US stocks
 most exposed to a given investment theme.
 
 Rules:

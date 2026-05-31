@@ -15,7 +15,7 @@ A dark-themed stock watchlist dashboard. Add ticker symbols, get live price card
 - **Tab filtering** — filter the card grid by All / Owned / Watching
 - **Auto-refresh** — quotes refresh every 60 seconds
 - **Isolated errors** — one bad ticker doesn't crash the grid
-- **Find Stocks** — AI-powered theme scanner at `/find`; pick a theme (or type your own), get 25 candidate tickers, conviction scores, and deep thesis cards for the top 3
+- **Find Stocks** — AI-powered theme scanner at `/find`; pick a theme (or type your own), get 10 candidate tickers, conviction scores, and deep thesis cards for the top 3
 
 ## Getting started
 
@@ -40,7 +40,7 @@ Tests cover `lib/yahoo.ts` (parse helpers), `hooks/useWatchlist.ts`, `hooks/useM
 app/
   api/quote/route.ts              — proxies Yahoo Finance chart endpoint
   api/news/route.ts               — proxies Yahoo Finance search endpoint
-  api/find-stocks/tickers/route.ts — POST: GPT-4o-mini generates 25 candidate tickers
+  api/find-stocks/tickers/route.ts — POST: GPT-4o-mini generates 10 candidate tickers
   api/find-stocks/scores/route.ts  — POST: Yahoo data + GPT-4o conviction scores
   api/find-stocks/thesis/route.ts  — POST: GPT-4o deep thesis for top 3
   page.tsx                        — main watchlist page
@@ -144,7 +144,7 @@ Requires `OPENAI_API_KEY` in `.env.local`. The three routes run sequentially, or
 
 | Route | Model | Purpose |
 |---|---|---|
-| `POST /api/find-stocks/tickers` | `gpt-4o-mini` | Returns 25 US-listed tickers most exposed to the theme |
+| `POST /api/find-stocks/tickers` | `gpt-4o-mini` | Returns 10 US-listed tickers most exposed to the theme |
 | `POST /api/find-stocks/scores` | `gpt-4o` | Scores each ticker 0–100 via a conviction framework |
 | `POST /api/find-stocks/thesis` | `gpt-4o` | Writes a deep thesis (moat / drawdown / catalyst / exit) for the top 3 |
 
@@ -153,9 +153,9 @@ Requires `OPENAI_API_KEY` in `.env.local`. The three routes run sequentially, or
 | Gate | Criterion | Points | Source |
 |---|---|---|---|
 | Quality | ROIC ≥ 15% | 20 | AI training knowledge |
-| Quality | FCF positive (TTM) | 20 | AI training knowledge |
-| Quality | Net Debt/EBITDA < 2× | 20 | AI training knowledge |
-| Quality | Revenue growing YoY | 20 | AI training knowledge |
+| Quality | FCF positive (TTM) | 20 | Yahoo Finance (quoteSummary `financialData`, live) |
+| Quality | Net Debt/EBITDA < 2× | 20 | Yahoo Finance (quoteSummary `financialData`, live) |
+| Quality | Revenue growing YoY | 20 | Yahoo Finance (quoteSummary `financialData`, live) |
 | Discount | Price ≥ 15% below 52-week high | 10 | Yahoo Finance (1y chart, live) |
 | Discount | Forward P/E < Trailing P/E | 10 | Yahoo Finance (quoteSummary, live) |
 

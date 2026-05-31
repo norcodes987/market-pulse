@@ -142,6 +142,13 @@ export interface FindStocksYahooSummary {
       summaryDetail?: {
         trailingPE?: { raw: number };
       };
+      financialData?: {
+        freeCashflow?: { raw: number };
+        revenueGrowth?: { raw: number };
+        totalDebt?: { raw: number };
+        totalCash?: { raw: number };
+        ebitda?: { raw: number };
+      };
     }> | null;
     error?: { code: string; description: string } | null;
   };
@@ -161,6 +168,9 @@ export interface TickerMarketData {
   forwardPE: number | null;
   trailingPE: number | null;
   forwardBelowTrailing: boolean | null;
+  freeCashflowPositive: boolean | null;
+  revenueGrowingYoY: boolean | null;
+  netDebtBelowTwoTimesEbitda: boolean | null;
 }
 
 export interface ConvictionScore {
