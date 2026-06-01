@@ -42,7 +42,7 @@ export function useWatchlist() {
     if (!ticker) return;
     setEntries((prev) => {
       if (prev.some((e) => e.ticker === ticker)) return prev;
-      return persist([...prev, { ticker, tag: 'watching' }]);
+      return persist([{ ticker, tag: 'watching' }, ...prev]);
     });
   }
 
