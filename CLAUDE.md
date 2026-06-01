@@ -1,9 +1,11 @@
-# Stock Buzz — Project Conventions
+# Market Pulse — Project Conventions
 
 ## What this is
+
 A stock watchlist dashboard. Users add ticker symbols; the app shows price cards with sparklines and a news feed. No auth, no database — just Yahoo Finance endpoints and localStorage.
 
 ## Stack
+
 - **Framework:** Next.js 16, App Router
 - **Language:** TypeScript (strict)
 - **Styling:** Tailwind CSS v4 (CSS-first config in globals.css — no `tailwind.config.js`)
@@ -13,6 +15,7 @@ A stock watchlist dashboard. Users add ticker symbols; the app shows price cards
 - **Persistence:** `localStorage` — watchlist only, no database
 
 ## Folder structure
+
 ```
 app/
   api/
@@ -42,26 +45,32 @@ types/
 ```
 
 ## API routes
+
 Both routes must:
+
 - Add `User-Agent: Mozilla/5.0` to every outbound request
 - Use a 10 s `AbortController` timeout
 - Return `{ error: string }` + an appropriate HTTP status on failure
 
 ### GET /api/quote?ticker=AAPL
+
 Upstream: `https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1d&range=5d`
 Response shape: `QuoteResponse` (see types/index.ts)
 
 ### GET /api/news?ticker=AAPL
+
 Upstream: `https://query1.finance.yahoo.com/v1/finance/search?q={ticker}&newsCount=5&quotesCount=0`
 Response shape: `{ articles: NewsArticle[] }`
 
 ## Data fetching rules
+
 - `useQuotes` calls `/api/quote` for **all** tickers with `Promise.allSettled` — no waterfall, no sequential awaits
 - Auto-refresh every 60 seconds via `setInterval`; clear on unmount
 - `useNews` fetches on demand (user expands a card) — not on mount
 - No `useEffect` fetch waterfalls in components; fetch at the hook level
 
 ## Styling conventions
+
 - Background: `#080808` | Cards: `#111111` | Borders: `#1f1f1f`
 - Accent: `#C8FF00` (neon yellow-green)
 - Positive change: `#22c55e` | Negative change: `#ef4444`
@@ -70,18 +79,21 @@ Response shape: `{ articles: NewsArticle[] }`
 - Custom design tokens live in the `@theme` block in `globals.css`
 
 ## TypeScript rules
+
 - All API response shapes defined in `types/index.ts` — import from there, never re-declare
 - Strict null checks; avoid `any` — use `unknown` + type guards when needed
 - Props interfaces defined inline at the top of each component file
 - `lib/yahoo.ts` is server-only — never import it from a client component or hook
 
 ## Error handling
+
 - Each stock card has its own error state — one bad ticker doesn't crash the grid
 - `useQuotes` uses `Promise.allSettled` so partial failures are isolated
 - Show `SkeletonCard` while loading, inline error message on failed cards
 - Log upstream errors to `console.error` in API routes (never leak stack traces to the client)
 
 ## Testing
+
 - Pure functions in `lib/yahoo.ts` are unit-tested in `lib/__tests__/yahoo.test.ts`
 - `useWatchlist` is tested with `renderHook` in `hooks/__tests__/useWatchlist.test.ts`
 - Run tests: `npm test`

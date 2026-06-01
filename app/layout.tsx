@@ -9,13 +9,17 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: 'Stock Buzz',
+  title: 'Market Pulse',
   description: 'Live stock watchlist dashboard',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={barlowCondensed.variable}>
+    <html lang='en' className={barlowCondensed.variable}>
       <body>{children}</body>
     </html>
   );

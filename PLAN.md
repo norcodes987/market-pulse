@@ -1,4 +1,4 @@
-# Stock Buzz Implementation Plan
+# Market Pulse Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -12,37 +12,38 @@
 
 ## File map
 
-| File | Responsibility |
-|------|---------------|
-| `types/index.ts` | All shared TypeScript interfaces |
-| `lib/yahoo.ts` | Pure parse helpers for Yahoo Finance JSON (server-only) |
-| `lib/__tests__/yahoo.test.ts` | Unit tests for parse helpers |
-| `app/api/quote/route.ts` | GET /api/quote?ticker=X |
-| `app/api/news/route.ts` | GET /api/news?ticker=X |
-| `app/globals.css` | Dark theme, Barlow Condensed, Tailwind v4 theme tokens |
-| `app/layout.tsx` | Root layout with font variable |
-| `app/page.tsx` | Main page — wires watchlist + quote grid |
-| `hooks/useWatchlist.ts` | localStorage-backed add/remove ticker list |
-| `hooks/__tests__/useWatchlist.test.ts` | Hook unit tests |
-| `hooks/useQuotes.ts` | Parallel fetch all quotes + 60 s auto-refresh |
-| `hooks/useNews.ts` | On-demand news fetch for one ticker |
-| `components/AddTickerForm.tsx` | Controlled input + submit for adding tickers |
-| `components/TickerPill.tsx` | Removable ticker chip |
-| `components/WatchlistBar.tsx` | Row of TickerPill components |
-| `components/TopBar.tsx` | App header with name + AddTickerForm |
-| `components/Sparkline.tsx` | Recharts AreaChart sparkline |
-| `components/SkeletonCard.tsx` | Loading placeholder card |
-| `components/StockCard.tsx` | Full price card (price, change, H/L, volume, sparkline, news toggle) |
-| `components/NewsItem.tsx` | Single news headline row |
-| `components/NewsDrawer.tsx` | Collapsible news feed panel |
-| `jest.config.ts` | Jest config for Next.js |
-| `jest.setup.ts` | `@testing-library/jest-dom` import |
+| File                                   | Responsibility                                                       |
+| -------------------------------------- | -------------------------------------------------------------------- |
+| `types/index.ts`                       | All shared TypeScript interfaces                                     |
+| `lib/yahoo.ts`                         | Pure parse helpers for Yahoo Finance JSON (server-only)              |
+| `lib/__tests__/yahoo.test.ts`          | Unit tests for parse helpers                                         |
+| `app/api/quote/route.ts`               | GET /api/quote?ticker=X                                              |
+| `app/api/news/route.ts`                | GET /api/news?ticker=X                                               |
+| `app/globals.css`                      | Dark theme, Barlow Condensed, Tailwind v4 theme tokens               |
+| `app/layout.tsx`                       | Root layout with font variable                                       |
+| `app/page.tsx`                         | Main page — wires watchlist + quote grid                             |
+| `hooks/useWatchlist.ts`                | localStorage-backed add/remove ticker list                           |
+| `hooks/__tests__/useWatchlist.test.ts` | Hook unit tests                                                      |
+| `hooks/useQuotes.ts`                   | Parallel fetch all quotes + 60 s auto-refresh                        |
+| `hooks/useNews.ts`                     | On-demand news fetch for one ticker                                  |
+| `components/AddTickerForm.tsx`         | Controlled input + submit for adding tickers                         |
+| `components/TickerPill.tsx`            | Removable ticker chip                                                |
+| `components/WatchlistBar.tsx`          | Row of TickerPill components                                         |
+| `components/TopBar.tsx`                | App header with name + AddTickerForm                                 |
+| `components/Sparkline.tsx`             | Recharts AreaChart sparkline                                         |
+| `components/SkeletonCard.tsx`          | Loading placeholder card                                             |
+| `components/StockCard.tsx`             | Full price card (price, change, H/L, volume, sparkline, news toggle) |
+| `components/NewsItem.tsx`              | Single news headline row                                             |
+| `components/NewsDrawer.tsx`            | Collapsible news feed panel                                          |
+| `jest.config.ts`                       | Jest config for Next.js                                              |
+| `jest.setup.ts`                        | `@testing-library/jest-dom` import                                   |
 
 ---
 
 ## Task 1: Install dependencies + configure Jest
 
 **Files:**
+
 - Create: `jest.config.ts`
 - Create: `jest.setup.ts`
 - Modify: `package.json` (scripts + devDependencies)
@@ -144,6 +145,7 @@ git commit -m "chore: add recharts and jest test infrastructure"
 ## Task 2: TypeScript interfaces
 
 **Files:**
+
 - Create: `types/index.ts`
 
 - [ ] **Step 1: Write types/index.ts**
@@ -233,6 +235,7 @@ git commit -m "feat: add TypeScript interfaces for Yahoo Finance and app state"
 ## Task 3: Yahoo Finance parse helpers + unit tests (TDD)
 
 **Files:**
+
 - Create: `lib/yahoo.ts`
 - Create: `lib/__tests__/yahoo.test.ts`
 
@@ -318,7 +321,12 @@ describe('parseQuote', () => {
 
   it('throws when chart result is null', () => {
     expect(() =>
-      parseQuote({ chart: { result: null, error: { code: '404', description: 'Not found' } } })
+      parseQuote({
+        chart: {
+          result: null,
+          error: { code: '404', description: 'Not found' },
+        },
+      }),
     ).toThrow('Not found');
   });
 });
@@ -334,7 +342,9 @@ describe('parseNews', () => {
 
   it('converts providerPublishTime to ISO string', () => {
     const result = parseNews(mockSearchResponse);
-    expect(result[0].publishedAt).toBe(new Date(1_700_000_000 * 1000).toISOString());
+    expect(result[0].publishedAt).toBe(
+      new Date(1_700_000_000 * 1000).toISOString(),
+    );
   });
 
   it('returns empty array when news is missing', () => {
@@ -401,7 +411,10 @@ export async function fetchYahoo<T>(url: string): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10_000);
   try {
-    const res = await fetch(url, { headers: YAHOO_HEADERS, signal: controller.signal });
+    const res = await fetch(url, {
+      headers: YAHOO_HEADERS,
+      signal: controller.signal,
+    });
     if (!res.ok) throw new Error(`Yahoo returned ${res.status}`);
     return res.json() as Promise<T>;
   } finally {
@@ -430,6 +443,7 @@ git commit -m "feat: Yahoo Finance parse helpers with unit tests"
 ## Task 4: API route — /api/quote
 
 **Files:**
+
 - Create: `app/api/quote/route.ts`
 
 - [ ] **Step 1: Create the route**
@@ -480,6 +494,7 @@ git commit -m "feat: /api/quote route wrapping Yahoo Finance chart endpoint"
 ## Task 5: API route — /api/news
 
 **Files:**
+
 - Create: `app/api/news/route.ts`
 
 - [ ] **Step 1: Create the route**
@@ -528,6 +543,7 @@ git commit -m "feat: /api/news route wrapping Yahoo Finance search endpoint"
 ## Task 6: Global styles + root layout
 
 **Files:**
+
 - Modify: `app/globals.css`
 - Modify: `app/layout.tsx`
 
@@ -536,13 +552,13 @@ git commit -m "feat: /api/news route wrapping Yahoo Finance search endpoint"
 Replace the entire file with:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-bg: #080808;
   --color-card: #111111;
   --color-border: #1f1f1f;
-  --color-accent: #C8FF00;
+  --color-accent: #c8ff00;
   --color-positive: #22c55e;
   --color-negative: #ef4444;
   --color-muted: #6b7280;
@@ -571,7 +587,7 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: 'Stock Buzz',
+  title: 'Market Pulse',
   description: 'Live stock watchlist dashboard',
 };
 
@@ -600,6 +616,7 @@ git commit -m "feat: dark theme globals and Barlow Condensed font setup"
 ## Task 7: useWatchlist hook + tests (TDD)
 
 **Files:**
+
 - Create: `hooks/useWatchlist.ts`
 - Create: `hooks/__tests__/useWatchlist.test.ts`
 
@@ -624,39 +641,58 @@ describe('useWatchlist', () => {
 
   it('adds a ticker', () => {
     const { result } = renderHook(() => useWatchlist());
-    act(() => { result.current.addTicker('AAPL'); });
+    act(() => {
+      result.current.addTicker('AAPL');
+    });
     expect(result.current.tickers).toContain('AAPL');
   });
 
   it('uppercases the ticker on add', () => {
     const { result } = renderHook(() => useWatchlist());
-    act(() => { result.current.addTicker('aapl'); });
+    act(() => {
+      result.current.addTicker('aapl');
+    });
     expect(result.current.tickers).toContain('AAPL');
   });
 
   it('does not add duplicate tickers', () => {
     const { result } = renderHook(() => useWatchlist());
-    act(() => { result.current.addTicker('AAPL'); });
-    act(() => { result.current.addTicker('AAPL'); });
+    act(() => {
+      result.current.addTicker('AAPL');
+    });
+    act(() => {
+      result.current.addTicker('AAPL');
+    });
     expect(result.current.tickers.filter((t) => t === 'AAPL')).toHaveLength(1);
   });
 
   it('removes a ticker', () => {
     const { result } = renderHook(() => useWatchlist());
-    act(() => { result.current.addTicker('AAPL'); });
-    act(() => { result.current.removeTicker('AAPL'); });
+    act(() => {
+      result.current.addTicker('AAPL');
+    });
+    act(() => {
+      result.current.removeTicker('AAPL');
+    });
     expect(result.current.tickers).not.toContain('AAPL');
   });
 
   it('persists tickers to localStorage', () => {
     const { result } = renderHook(() => useWatchlist());
-    act(() => { result.current.addTicker('MSFT'); });
-    const stored = JSON.parse(localStorage.getItem('stockbuzz:watchlist') ?? '[]');
+    act(() => {
+      result.current.addTicker('MSFT');
+    });
+    const stored = JSON.parse(
+      localStorage.getItem('stockbuzz:watchlist') ?? '[]',
+    );
     expect(stored).toContain('MSFT');
   });
 
   it('hydrates from localStorage on mount', () => {
-    localStorage.setItem('stockbuzz:watchlist', JSON.stringify(['TSLA', 'NVDA']));
+    localStorage.setItem(
+      'stockbuzz:watchlist',
+      JSON.stringify(['TSLA', 'NVDA']),
+    );
     const { result } = renderHook(() => useWatchlist());
     expect(result.current.tickers).toEqual(['TSLA', 'NVDA']);
   });
@@ -741,6 +777,7 @@ git commit -m "feat: useWatchlist hook with localStorage persistence"
 ## Task 8: AddTickerForm, TickerPill, WatchlistBar, TopBar components
 
 **Files:**
+
 - Create: `components/AddTickerForm.tsx`
 - Create: `components/TickerPill.tsx`
 - Create: `components/WatchlistBar.tsx`
@@ -864,7 +901,7 @@ export function TopBar({ onAdd }: Props) {
   return (
     <header className="flex items-center justify-between px-6 py-4 border-b border-[#1f1f1f]">
       <h1 className="font-heading text-2xl font-bold tracking-wide text-[#C8FF00]">
-        Stock Buzz
+        Market Pulse
       </h1>
       <AddTickerForm onAdd={onAdd} />
     </header>
@@ -884,6 +921,7 @@ git commit -m "feat: TopBar, AddTickerForm, TickerPill, WatchlistBar components"
 ## Task 9: Sparkline component
 
 **Files:**
+
 - Create: `components/Sparkline.tsx`
 
 - [ ] **Step 1: Create Sparkline.tsx**
@@ -934,6 +972,7 @@ git commit -m "feat: Sparkline component using Recharts AreaChart"
 ## Task 10: SkeletonCard component
 
 **Files:**
+
 - Create: `components/SkeletonCard.tsx`
 
 - [ ] **Step 1: Create SkeletonCard.tsx**
@@ -971,6 +1010,7 @@ git commit -m "feat: SkeletonCard loading placeholder"
 ## Task 11: useQuotes hook
 
 **Files:**
+
 - Create: `hooks/useQuotes.ts`
 
 - [ ] **Step 1: Create hooks/useQuotes.ts**
@@ -999,8 +1039,8 @@ export function useQuotes(tickers: string[]) {
 
     const results = await Promise.allSettled(
       tickers.map((ticker) =>
-        fetch(`/api/quote?ticker=${ticker}`).then((r) => r.json())
-      )
+        fetch(`/api/quote?ticker=${ticker}`).then((r) => r.json()),
+      ),
     );
 
     setQuotes((prev) => {
@@ -1015,7 +1055,10 @@ export function useQuotes(tickers: string[]) {
             next[ticker] = { status: 'ok', data };
           }
         } else {
-          next[ticker] = { status: 'error', message: result.reason?.message ?? 'Fetch failed' };
+          next[ticker] = {
+            status: 'error',
+            message: result.reason?.message ?? 'Fetch failed',
+          };
         }
       });
       return next;
@@ -1033,7 +1076,7 @@ export function useQuotes(tickers: string[]) {
     setQuotes((prev) => {
       const tickerSet = new Set(tickers);
       const cleaned = Object.fromEntries(
-        Object.entries(prev).filter(([t]) => tickerSet.has(t))
+        Object.entries(prev).filter(([t]) => tickerSet.has(t)),
       );
       return cleaned;
     });
@@ -1055,6 +1098,7 @@ git commit -m "feat: useQuotes hook — parallel fetch + 60s auto-refresh"
 ## Task 12: StockCard component
 
 **Files:**
+
 - Create: `components/StockCard.tsx`
 
 - [ ] **Step 1: Create StockCard.tsx**
@@ -1165,6 +1209,7 @@ git commit -m "feat: StockCard with price, change, sparkline, and news toggle"
 ## Task 13: useNews hook
 
 **Files:**
+
 - Create: `hooks/useNews.ts`
 
 - [ ] **Step 1: Create hooks/useNews.ts**
@@ -1203,7 +1248,9 @@ export function useNews(ticker: string) {
         if (!cancelled) setState({ status: 'error', message: err.message });
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [ticker]);
 
   return state;
@@ -1222,6 +1269,7 @@ git commit -m "feat: useNews hook for on-demand news fetch"
 ## Task 14: NewsItem + NewsDrawer components
 
 **Files:**
+
 - Create: `components/NewsItem.tsx`
 - Create: `components/NewsDrawer.tsx`
 
@@ -1325,6 +1373,7 @@ git commit -m "feat: NewsDrawer and NewsItem components"
 ## Task 15: Main page.tsx
 
 **Files:**
+
 - Modify: `app/page.tsx`
 
 - [ ] **Step 1: Replace the default page**
@@ -1378,7 +1427,8 @@ export default function Home() {
 - [ ] **Step 2: Golden path test in browser**
 
 Start `npm run dev` and verify:
-1. Page loads with dark background and "Stock Buzz" header
+
+1. Page loads with dark background and "Market Pulse" header
 2. Type `AAPL` and click Add — pill appears, card appears with loading skeleton
 3. After ~2 s, card shows price, change in green/red, sparkline
 4. Click "Show news ↓" — news articles appear
@@ -1408,23 +1458,23 @@ git commit -m "feat: main page — wires watchlist, quotes grid, and TopBar"
 
 ### Spec coverage check
 
-| Requirement | Task(s) |
-|---|---|
-| Add/remove ticker symbols | Task 7 (hook) + Task 8 (UI) |
-| Persist to localStorage | Task 7 |
-| Card: price, change $+%, H/L, volume, sparkline | Task 12 |
-| News feed — 5 headlines per ticker | Task 13 + Task 14 |
-| News links open in new tab | Task 14 (`target="_blank"`) |
-| Auto-refresh every 60 s | Task 11 (`setInterval`) |
-| Green/red color coding | Task 12 (`changeColor`) |
-| User-Agent header on Yahoo requests | Task 3 (`YAHOO_HEADERS`) |
-| 10 s timeout | Task 3 (`AbortController`) |
-| Graceful error handling per card | Task 12 (error branch) |
-| Loading skeletons | Task 10 + Task 12 |
-| `Promise.allSettled` parallel fetch | Task 11 |
-| Dark theme #080808 + accent #C8FF00 | Task 6 |
-| Barlow Condensed headings | Task 6 |
-| 2-col tablet / 3-col desktop grid | Task 15 (`sm:grid-cols-2 lg:grid-cols-3`) |
-| Card news drawer | Task 12 (toggle) + Task 14 |
+| Requirement                                     | Task(s)                                   |
+| ----------------------------------------------- | ----------------------------------------- |
+| Add/remove ticker symbols                       | Task 7 (hook) + Task 8 (UI)               |
+| Persist to localStorage                         | Task 7                                    |
+| Card: price, change $+%, H/L, volume, sparkline | Task 12                                   |
+| News feed — 5 headlines per ticker              | Task 13 + Task 14                         |
+| News links open in new tab                      | Task 14 (`target="_blank"`)               |
+| Auto-refresh every 60 s                         | Task 11 (`setInterval`)                   |
+| Green/red color coding                          | Task 12 (`changeColor`)                   |
+| User-Agent header on Yahoo requests             | Task 3 (`YAHOO_HEADERS`)                  |
+| 10 s timeout                                    | Task 3 (`AbortController`)                |
+| Graceful error handling per card                | Task 12 (error branch)                    |
+| Loading skeletons                               | Task 10 + Task 12                         |
+| `Promise.allSettled` parallel fetch             | Task 11                                   |
+| Dark theme #080808 + accent #C8FF00             | Task 6                                    |
+| Barlow Condensed headings                       | Task 6                                    |
+| 2-col tablet / 3-col desktop grid               | Task 15 (`sm:grid-cols-2 lg:grid-cols-3`) |
+| Card news drawer                                | Task 12 (toggle) + Task 14                |
 
 All requirements covered. No placeholders found.

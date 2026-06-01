@@ -1498,7 +1498,7 @@ export default function FindPage() {
     <div className="min-h-screen bg-[#080808]">
       <header className="flex items-center justify-between border-b border-[#1f1f1f] px-4 py-4 sm:px-6">
         <h1 className="font-heading text-2xl font-bold tracking-wide text-[#C8FF00]">
-          Stock Buzz
+          Market Pulse
         </h1>
         <Link href="/" className="text-sm text-[#888] hover:text-[#C8FF00]">
           ← Back to watchlist
@@ -1661,7 +1661,7 @@ export function TopBar({ onAdd }: Props) {
   return (
     <header className="flex flex-col gap-3 px-4 py-4 border-b border-[#1f1f1f] sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:px-6">
       <h1 className="font-heading text-2xl font-bold tracking-wide text-[#C8FF00]">
-        Stock Buzz
+        Market Pulse
       </h1>
       <div className="flex items-center gap-3">
         <Link
